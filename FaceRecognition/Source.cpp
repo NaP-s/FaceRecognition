@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include "Histogram.h"
 
-
+/// Test Ju
 // Namespace declaration
 using namespace std;
 using namespace cv; 
