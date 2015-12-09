@@ -20,6 +20,10 @@
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Histogram.h" />
   </ItemGroup>
+  <ItemGroup>
+    <Xml Include="haarcascade_eye_tree_eyeglasses.xml" />
+    <Xml Include="haarcascade_frontalface_alt.xml" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{82A3ADE4-E7B1-49CF-8F5C-18FD1D978286}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>

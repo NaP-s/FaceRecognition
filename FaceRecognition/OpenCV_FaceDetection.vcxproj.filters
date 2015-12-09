@@ -36,4 +36,8 @@
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
   </ItemGroup>
+  <ItemGroup>
+    <Xml Include="haarcascade_frontalface_alt.xml" />
+    <Xml Include="haarcascade_eye_tree_eyeglasses.xml" />
+  </ItemGroup>
 </Project>
