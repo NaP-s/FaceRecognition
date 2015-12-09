@@ -7,14 +7,6 @@
 #include <stdio.h>
 #include "Histogram.h"
 
-//Modif Lucas
-/// Test Ju
-
-//HELLOWORK
-
-//Test charlot
-
-// Deuxime modif
 // Namespace declaration
 using namespace std;
 using namespace cv; 
@@ -53,7 +45,8 @@ int main(){
 	Mat frame;
 
 	//On charge les deux images à comparer
-	// TODO 
+	
+	// TODO ZARN 
 	/*imTestLucas = imread("D:/Users/julien.zarniak/Documents/visual studio 2013/Projects/OpenCV_FaceDetection/Images/Lucas_crop.jpg", 1);
 	imTestJulien = imread("D:/Users/julien.zarniak/Documents/visual studio 2013/Projects/OpenCV_FaceDetection/Images/Julien_crop.jpg", 1);
 */
@@ -91,7 +84,7 @@ int main(){
 				if (!dst.empty())
 				{
 					i++;
-					ss << "D:/Users/julien.zarniak/Documents/visual studio 2013/Projects/OpenCV_FaceDetection/Images/LBP" << i << ".jpg";
+					ss << "../cImages/" << i << ".jpg";
 					imwrite(ss.str(), dst);
 					ss.str("");
 				}

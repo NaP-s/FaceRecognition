@@ -5,6 +5,7 @@
   <PropertyGroup>
     <ExecutablePath>D:\OpenCV\build\x86\vc12\bin;$(ExecutablePath)</ExecutablePath>
     <LibraryPath>D:\OpenCV\build\x86\vc12\lib;$(LibraryPath)</LibraryPath>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <Link>
