@@ -35,10 +35,8 @@ Mat dst;
 Mat histo;
 
 // Global variables
-String face_cascade_name = "D:/OpenCV/sources/data/haarcascades/haarcascade_frontalface_alt.xml";
-// "D:/OpenCV/sources/data/haarcascades/haarcascade_frontalface_alt.xml";
-String eyes_cascade_name = "D:/OpenCV/sources/data/haarcascades/haarcascade_eye_tree_eyeglasses.xml";
-//"D:/OpenCV/sources/data/haarcascades/haarcascade_eye_tree_eyeglasses.xml";
+String face_cascade_name = "haarcascade_frontalface_alt.xml";
+String eyes_cascade_name = "haarcascade_eye_tree_eyeglasses.xml";
 CascadeClassifier face_cascade;
 CascadeClassifier eyes_cascade;
 
