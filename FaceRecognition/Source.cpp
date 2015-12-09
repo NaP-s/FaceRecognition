@@ -7,8 +7,7 @@
 #include <stdio.h>
 #include "Histogram.h"
 
-//Modif Lucas
-/// Test Ju
+
 // Namespace declaration
 using namespace std;
 using namespace cv; 
