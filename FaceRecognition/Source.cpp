@@ -89,7 +89,7 @@ int main(){
 				destroyWindow("FYP Live Camera");
 				break;
 			}
-			if ((char)c == 's') {
+			/*if ((char)c == 's') {
 				if (!dst.empty())
 				{
 					i++;
@@ -97,7 +97,7 @@ int main(){
 					imwrite(ss.str(), dst);
 					ss.str("");
 				}
-			}
+			}*/
 		}
 	}
 	else{
