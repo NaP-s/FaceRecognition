@@ -7,6 +7,10 @@
 #include <stdio.h>
 #include "Histogram.h"
 
+
+//TEST BRANCHE DEV
+
+
 // Namespace declaration
 using namespace std;
 using namespace cv; 
