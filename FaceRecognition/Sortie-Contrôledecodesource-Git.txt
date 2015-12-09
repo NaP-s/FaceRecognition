@@ -1,0 +1,12 @@
+﻿Ouverture du référentiel : D:\Cours\Projet Télécom\GitHub.
+Ouverture du référentiel : D:\Cours\Projet Télécom\GitHub\FaceRecognition.
+Impossible de terminer l'opération à cause de modifications existantes au fichier suivant :
+	FaceRecognition\Source.cpp
+Impossible de terminer l'opération à cause de modifications existantes au fichier suivant :
+	FaceRecognition\Source.cpp
+Impossible de terminer l'opération à cause de modifications existantes au fichier suivant :
+	FaceRecognition\Source.cpp
+Impossible de terminer l'opération à cause de modifications existantes au fichier suivant :
+	FaceRecognition\Source.cpp
+Impossible de terminer l'opération à cause de modifications existantes au fichier suivant :
+	FaceRecognition\Source.cpp
