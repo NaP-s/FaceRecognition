@@ -6,19 +6,20 @@
 #include <iostream>
 #include <stdio.h>
 #include "Histogram.h"
-
+#include <fstream>
 
 //TEST BRANCHE DEV
 
 
 // Namespace declaration
 using namespace std;
-using namespace cv; 
+using namespace cv;
 
 // Function Headers
 void detectAndDisplay(Mat frame);
 int comp(Mat a, Mat b, Mat c);
 Mat CalculHistogrammeNdg(Mat);
+void CalcHistoFromImage(Mat);
 
 string name = "toto";
 stringstream ss;
@@ -49,11 +50,11 @@ int main(){
 	Mat frame;
 
 	//On charge les deux images à comparer
-	
+
 	// TODO ZARN 
 	/*imTestLucas = imread("D:/Users/julien.zarniak/Documents/visual studio 2013/Projects/OpenCV_FaceDetection/Images/Lucas_crop.jpg", 1);
 	imTestJulien = imread("D:/Users/julien.zarniak/Documents/visual studio 2013/Projects/OpenCV_FaceDetection/Images/Julien_crop.jpg", 1);
-*/
+	*/
 	// Load the cascade, use ifs (if more than one xml files are used) to prevent segmentation fault
 	if (!face_cascade.load(face_cascade_name)){
 		printf("--(!)Error loading\n");
@@ -217,40 +218,69 @@ Mat LBP(Mat img){
 // Gestion Histogramme
 Mat CalculHistogrammeNdg(Mat frame)
 {
-	//Histogramme
-	/// Taile de l'histogramme
-	int histSize = 256;
-
-	/// Set the ranges)
-	float range[] = { 0, 256 };
-	const float* histRange = { range };
-
-	bool uniform = true; bool accumulate = true;
-
-	Mat ndg_hist;
-
-	/// Compute the histograms:
-	calcHist(&frame, 1, 0, Mat(), ndg_hist, 1, &histSize, &histRange, uniform, accumulate);
-
-	// Draw the histograms for B, G and R
-	int hist_w = 512; int hist_h = 400;
-	int bin_w = cvRound((double)hist_w / histSize);
-
-	Mat histImage(hist_h, hist_w, CV_8UC3, Scalar(0, 0, 0));
-
-	/// Normalize the result to [ 0, histImage.rows ]
-	normalize(ndg_hist, ndg_hist, 0, histImage.rows, NORM_MINMAX, -1, Mat());
-
-
-	/// Draw for each channel
-	for (int i = 1; i < histSize; i++)
+	try
 	{
-		line(histImage, Point(bin_w*(i - 1), hist_h - cvRound(ndg_hist.at<float>(i - 1))),
-			Point(bin_w*(i), hist_h - cvRound(ndg_hist.at<float>(i))),
-			Scalar(255, 255, 255), 2, 8, 0);
+		//Histogramme
+		/// Taile de l'histogramme
+		int histSize = 256;
+
+		/// Set the ranges)
+		float range[] = { 0, 256 };
+		const float* histRange = { range };
+
+		bool uniform = true; bool accumulate = true;
+
+		Mat ndg_hist;
+
+		/// Compute the histograms:
+		calcHist(&frame, 1, 0, Mat(), ndg_hist, 1, &histSize, &histRange, uniform, accumulate);
+
+		// Draw the histograms for B, G and R
+		int hist_w = 512; int hist_h = 400;
+		int bin_w = cvRound((double)hist_w / histSize);
+
+		Mat histImage(hist_h, hist_w, CV_8UC3, Scalar(0, 0, 0));
+
+		/// Normalize the result to [ 0, histImage.rows ]
+		normalize(ndg_hist, ndg_hist, 0, histImage.rows, NORM_MINMAX, -1, Mat());
+
+
+		/// Draw for each channel
+		for (int i = 1; i < histSize; i++)
+		{
+			line(histImage, Point(bin_w*(i - 1), hist_h - cvRound(ndg_hist.at<float>(i - 1))),
+				Point(bin_w*(i), hist_h - cvRound(ndg_hist.at<float>(i))),
+				Scalar(255, 255, 255), 2, 8, 0);
+		}
+		/// Return
+		ofstream fichier("test.txt", ios::out | ios::trunc);  //déclaration du flux et ouverture du fichier
+
+		if (fichier)  // si l'ouverture a réussi
+		{
+
+			for (int i = 0; i < frame.rows; i++)
+			{
+				for (int j = 0; j < frame.cols; j++)
+				{
+					std::cout << "Matrix of image loaded is: " << frame.at<uchar>(i, j);
+					/*Vec3b intensity = frame.at<Vec3b>(j, i);
+					for (int k = 0; k < frame.channels(); k++) {
+						uchar col = intensity.val[k];
+						fichier.write((char *)col, 1);
+						fichier.write(";", 1);*/
+					
+					// do something with BGR values...
+				}
+			}
+
+		}
+		//fichier.close();  // on referme le fichier
+		return histImage;
 	}
-	/// Return
-	return histImage;
+	catch (cv::Exception & e)
+	{
+		cout << e.msg << endl;
+	}
 }
 
 
@@ -315,12 +345,41 @@ int comp(Mat a, Mat b, Mat c)
 		double base_test1 = compareHist(hist_base, hist_test1, compare_method);
 		double base_test2 = compareHist(hist_base, hist_test2, compare_method);
 
-
-
 		printf(" Method [%d] Perfect, Base-Half, Base-Test(1), Base-Test(2) : %f, %f, %f, %f \n", i, base_base, base_half, base_test1, base_test2);
 	}
 
 	printf("Done \n");
 
 	return 0;
+}
+
+
+void CalcHistoFromImage(Mat frame)
+{
+	//Histogramme
+	/// Taile de l'histogramme
+	ofstream fichier("test.txt", ios::out | ios::trunc);  //déclaration du flux et ouverture du fichier
+
+	if (fichier)  // si l'ouverture a réussi
+	{
+
+		for (int i = 0; i < frame.rows; i++)
+		{
+			for (int j = 0; j < frame.cols; j++)
+			{
+				Vec3b intensity = frame.at<Vec3b>(j, i);
+				for (int k = 0; k < frame.channels(); k++) {
+					uchar col = intensity.val[k];
+					fichier.write((char *)col, 1);
+					fichier.write(";", 1);
+				}
+				// do something with BGR values...
+			}
+		}
+
+		fichier.close();  // on referme le fichier
+	}
+	else  // sinon
+		cerr << "Erreur à l'ouverture !" << endl;
+
 }
