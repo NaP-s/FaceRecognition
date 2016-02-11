@@ -11,14 +11,11 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Camera.cpp" />
-    <ClCompile Include="Hist.cpp" />
-    <ClCompile Include="Histogram.cpp" />
+    <ClCompile Include="Traitements.cpp" />
     <ClCompile Include="Source.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Camera.h" />
-    <ClInclude Include="Histogram.h" />
+    <ClInclude Include="Traitements.h" />
   </ItemGroup>
   <ItemGroup>
     <Xml Include="haarcascade_eye_tree_eyeglasses.xml" />
