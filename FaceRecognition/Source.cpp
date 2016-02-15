@@ -6,6 +6,7 @@
 #include <iostream>
 #include <stdio.h>
 #include "Traitements.h"
+#include"Image.h"
 
 // Déclaration des namespace
 using namespace std;
@@ -19,6 +20,9 @@ String face_cascade_name = "haarcascade_frontalface_alt.xml";
 String eyes_cascade_name = "haarcascade_eye_tree_eyeglasses.xml";
 CascadeClassifier face_cascade;
 CascadeClassifier eyes_cascade;
+
+Image *imageCamera;
+Image *imageReduite;
 
 #pragma region Fonction main : On lance nos Threads
 int main(){
@@ -53,12 +57,21 @@ int main(){
 			frame = cvQueryFrame(capture);
 			cv::flip(frame, frame, 1);
 
+			imageCamera = new Image(frame,1,1,1,0,1,0);
+			ima
+			//imageCamera->PreprocessingWithTanTrigs(imageCamera->get_frameCouleur());
 
 			// Si on a une image => Alors on detecte
 			if (!frame.empty()){
 				try
 				{
-					detectAndDisplay(frame);
+					//detectAndDisplay(imageCamera->get_frameCouleur());
+					imshow("WebCam", imageCamera->get_frameCouleur());
+					imshow("WebCamNdg", imageCamera->get_frameNdg());
+					imshow("WebCamLbp", imageCamera->get_frameLbp());
+
+					imshow("HistoNdg", imageCamera->get_frameHistogramNdg().get_graphHistogram());
+					//imshow("WebCam2", imageCamera->get_frameCouleur());
 				}
 				catch (exception e)
 				{
@@ -151,6 +164,8 @@ void detectAndDisplay(Mat frame){
 			imageNDG_PourTraitement = imageNDG_Redim(roi_c);
 			resize(imageNDG_PourTraitement, imageNDG_PourTraitement, Size(128, 128), 0, 0, INTER_LINEAR);
 
+			imageReduite = new Image(imageCouleurRedim(roi_c), 1, 1, 1, 0, 0, 1);
+
 			// On crée notre image LBP
 			imageLBP = Traitements::LBP(imageNDG_PourTraitement);
 
@@ -171,7 +186,7 @@ void detectAndDisplay(Mat frame){
 	imshow("WebCam", frame);
 	if (!imageNDG_PourTraitement.empty())
 	{
-		imshow("imageLBP", imageLBP);
+		imshow("imageLBP", imageReduite->get_frameLbp());
 		imshow("imageNDG_PourTraitement", imageNDG_PourTraitement);
 		imshow("imageHistogrammeLBP", imageHistogrammeLBP);
 
