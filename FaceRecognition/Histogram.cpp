@@ -5,14 +5,20 @@ Histogram::Histogram()
 {
 }
 
-Histogram::Histogram(Mat frame, bool isNdgFrame, bool isColorFrame)
+Histogram::Histogram(Mat frame)
 {
 	if (frame.empty())
 		return;
-	if (isColorFrame)
-		this->CreateHistogrammeCouleur(frame);
-	if (isNdgFrame)
+	switch (frame.channels()) {
+	case 1:
 		this->CreateHistogrammeNDG(frame);
+		break;
+	case 3:
+		this->CreateHistogrammeCouleur(frame);
+		break;
+	default:
+		break;
+	}
 }
 
 Histogram::~Histogram()

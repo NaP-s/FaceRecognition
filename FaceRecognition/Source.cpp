@@ -13,7 +13,7 @@ using namespace std;
 using namespace cv;
 
 // Function Headers
-void detectAndDisplay(Mat frame);
+void detectAndDisplay();
 
 // Global variables
 String face_cascade_name = "haarcascade_frontalface_alt.xml";
@@ -23,6 +23,8 @@ CascadeClassifier eyes_cascade;
 
 Image *imageCamera;
 Image *imageReduite;
+Image *imagePourTraitement;
+Image *imagePourTraitementAvecPretraitement;
 
 #pragma region Fonction main : On lance nos Threads
 int main(){
@@ -56,26 +58,18 @@ int main(){
 			// On récupère une image depuis la caméra
 			frame = cvQueryFrame(capture);
 			cv::flip(frame, frame, 1);
+			imageCamera = new Image(frame, 1, 1, 0, 0, 0, 0);
 
-			imageCamera = new Image(frame,1,1,1,0,1,0);
-			ima
-			//imageCamera->PreprocessingWithTanTrigs(imageCamera->get_frameCouleur());
 
 			// Si on a une image => Alors on detecte
 			if (!frame.empty()){
 				try
 				{
-					//detectAndDisplay(imageCamera->get_frameCouleur());
-					imshow("WebCam", imageCamera->get_frameCouleur());
-					imshow("WebCamNdg", imageCamera->get_frameNdg());
-					imshow("WebCamLbp", imageCamera->get_frameLbp());
+					detectAndDisplay();
 
-					imshow("HistoNdg", imageCamera->get_frameHistogramNdg().get_graphHistogram());
-					//imshow("WebCam2", imageCamera->get_frameCouleur());
 				}
 				catch (exception e)
 				{
-					//throw(e);
 					continue;
 				}
 			}
@@ -104,29 +98,23 @@ int main(){
 /// <summary>Méthode de détection et d'affichage
 /// <para>frame : Image d'entrée envoyé par la webcam</para>
 /// </summary>
-void detectAndDisplay(Mat frame){
+void detectAndDisplay(){
 	// Vecteurs de rectangle => Chaque rectangle correspond à l'emplacement d'un visage / yeux 
 	std::vector<Rect> faces;
 	std::vector<Rect> eyes;
 
-	// Images de traitement ou d'affichage
-	Mat imageCamNDG;
-	Mat imageCouleurRedim;
-	Mat imageNDG_Redim;
-	Mat imageNDG_PourTraitement;
-	Mat imageLBP;
-	Mat imageHistogrammeLBP;
 
 	// On définit des régions d'interet permettant d'isoler une partie de l'image et ainsi accelerer les temps de traitement
 	Rect roi_b;
 	Rect roi_c;
 
-	// On convertit l'image de la webcam en Ndg puis on égalise son histogramme
-	cvtColor(frame, imageCamNDG, COLOR_BGR2GRAY);
-	equalizeHist(imageCamNDG, imageCamNDG);
+	// On convertit l'image de la webcam en Ndg puis on égalise son histogramme si nécessaire
+	if (imageCamera->get_frameNdg().empty())
+		imageCamera->set_frameNdg(imageCamera->ConvertToNdg(imageCamera->get_frameCouleur(), true));
+
 
 	// Détection du visage : CV_HAAR_FIND_BIGGEST_OBJECT On cherche le plus gros objet ; Size(60, 60) => De taille minimum 60*60 pixels
-	face_cascade.detectMultiScale(imageCamNDG, faces, 1.1, 4, 0 | CV_HAAR_FIND_BIGGEST_OBJECT, Size(60, 60));
+	face_cascade.detectMultiScale(imageCamera->get_frameNdg(), faces, 1.1, 4, 0 | CV_HAAR_FIND_BIGGEST_OBJECT, Size(60, 60));
 
 	size_t ic = 0; // Index dans le tableau faces : Dans notre cas, on ne détecte qu'un seul visage
 	if (faces.size() != 0){
@@ -137,15 +125,13 @@ void detectAndDisplay(Mat frame){
 		roi_b.height = faces[ic].height;
 
 		// On créer une nouvelle image avec juste le visage en découpant une partie de l'image de la webCam
-		imageCouleurRedim = frame(roi_b);
-		resize(imageCouleurRedim, imageCouleurRedim, Size(256, 256), 0, 0, INTER_LINEAR);
-
-		cvtColor(imageCouleurRedim, imageNDG_Redim, CV_BGR2GRAY); // On convertit notre image en NDG pour nos traitements
+		imageReduite = new Image( Image::resize(imageCamera->get_frameCouleur()(roi_b),Size(256,256)),1,0,1,0,0,0);
+		//resize(imageReduite->get_frameCouleur(), imageReduite->get_frameCouleur(), Size(256, 256), 0, 0, INTER_LINEAR);
 
 		// On lance la détection des yeux : CV_HAAR_SCALE_IMAGE On cherche plusieurs objets ; Size(15, 15) => De taille minimum 15*15 pixels
 		// La position des yeux vas nous permettre de pouvoir redecouper notre image en etant resserré sur le visage. On ne voit donc plus le fond.
 		// C'est cette image qui nous servira pour notre image LBP
-		eyes_cascade.detectMultiScale(imageNDG_Redim, eyes, 1.1, 4, 0 | CV_HAAR_SCALE_IMAGE, Size(15, 15));
+		eyes_cascade.detectMultiScale(imageReduite->get_frameNdg(), eyes, 1.1, 4, 0 | CV_HAAR_SCALE_IMAGE, Size(15, 15));
 		// Dans le cas ou on a bien détecter deux yeux
 		if (eyes.size() == 2){
 			// Si le premier oeil du vecteur est l'oeil gauche
@@ -161,40 +147,46 @@ void detectAndDisplay(Mat frame){
 				roi_c.width = (eyes[0].x + 65) - roi_c.x;
 				roi_c.height = 190;
 			}
-			imageNDG_PourTraitement = imageNDG_Redim(roi_c);
-			resize(imageNDG_PourTraitement, imageNDG_PourTraitement, Size(128, 128), 0, 0, INTER_LINEAR);
+			imagePourTraitement = new Image(Image::resize(imageReduite->get_frameCouleur()(roi_c),Size(128, 128)), 1, 0, 1, 0, 0, 1);
+			////resize(imagePourTraitement->get_frameNdg(), imagePourTraitement->get_frameNdg(), Size(128, 128), 0, 0, INTER_LINEAR);
 
-			imageReduite = new Image(imageCouleurRedim(roi_c), 1, 1, 1, 0, 0, 1);
+			// On crée notre / nos images LBP
+			imagePourTraitementAvecPretraitement = new Image(imagePourTraitement->get_frameCouleur(), 1, 0, 0, 0, 0, 0);
+			imagePourTraitementAvecPretraitement->set_frameNdg(imagePourTraitement->Normalize(imagePourTraitement->PreprocessingWithTanTrigs(imagePourTraitement->get_frameNdg())));
 
-			// On crée notre image LBP
-			imageLBP = Traitements::LBP(imageNDG_PourTraitement);
-
+			imagePourTraitementAvecPretraitement->set_frameLbp(imagePourTraitement->CreateLbpImage(imagePourTraitement->Normalize(imagePourTraitement->PreprocessingWithTanTrigs(imagePourTraitement->get_frameNdg()))));
 			// On trace notre histogramme depuis notre image LBP
-			imageHistogrammeLBP = Traitements::HistogrammeNDG(imageLBP);
+			imagePourTraitementAvecPretraitement->set_histogramLbp(*new Histogram(imagePourTraitementAvecPretraitement->get_frameLbp()));
 
 		}
 
 		// Dessin du visage détecté sur l'image principale
 		Point pt1(faces[ic].x, faces[ic].y);
 		Point pt2((faces[ic].x + faces[ic].height), (faces[ic].y + faces[ic].width));
-		rectangle(frame, pt1, pt2, Scalar(0, 255, 0), 1, 8, 0);
+		rectangle(imageCamera->get_frameCouleur(), pt1, pt2, Scalar(0, 255, 0), 1, 8, 0);
 
-		putText(frame, "Visage Detecte ici", cvPoint((faces[ic].x + faces[ic].width / 4), faces[ic].y - 10), FONT_HERSHEY_COMPLEX_SMALL, 0.8, cvScalar(0, 0, 255), 1, CV_AA);
+		putText(imageCamera->get_frameCouleur(), "Visage Detecte ici", cvPoint((faces[ic].x + faces[ic].width / 4), faces[ic].y - 10), FONT_HERSHEY_COMPLEX_SMALL, 0.8, cvScalar(0, 0, 255), 1, CV_AA);
 	}
 
 	// Affichage des differentes images
-	imshow("WebCam", frame);
-	if (!imageNDG_PourTraitement.empty())
+	imshow("WebCam", imageCamera->get_frameCouleur());
+	if (!imagePourTraitementAvecPretraitement->get_frameLbp().empty())
 	{
-		imshow("imageLBP", imageReduite->get_frameLbp());
-		imshow("imageNDG_PourTraitement", imageNDG_PourTraitement);
-		imshow("imageHistogrammeLBP", imageHistogrammeLBP);
+		imshow("imageLBP", imagePourTraitement->get_frameLbp());
+		imshow("imageLBPAvecPretraitement", imagePourTraitementAvecPretraitement->get_frameLbp());
+		imshow("imageNDG_PourTraitement", imagePourTraitement ->get_frameNdg());
+		imshow("imageNDG_PourTraitementAvecPretraitement", imagePourTraitementAvecPretraitement->get_frameNdg());
+		imshow("imageHistogrammeLBP", imagePourTraitementAvecPretraitement->get_frameHistogramLbp().get_graphHistogram());
+		imshow("imageHistogrammeLBPAvecPretraitement", imagePourTraitement->get_frameHistogramLbp().get_graphHistogram());
 
 	}
 	else{
 		destroyWindow("imageLBP");
+		destroyWindow("imageLBPAvecPretraitement");
 		destroyWindow("imageNDG_PourTraitement");
+		destroyWindow("imageNDG_PourTraitementAvecPretraitement");
 		destroyWindow("imageHistogrammeLBP");
+		destroyWindow("imageHistogrammeLBPAvecPretraitement");
 	}
 }
 #pragma endregion

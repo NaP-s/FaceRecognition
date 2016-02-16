@@ -8,7 +8,7 @@ class Histogram
 {
 public:
 	Histogram();
-	Histogram(Mat frame, bool isNdgFrame, bool isColorFrame);
+	Histogram(Mat frame);
 	~Histogram();
 
 	void CreateHistogrammeCouleur(Mat frame);

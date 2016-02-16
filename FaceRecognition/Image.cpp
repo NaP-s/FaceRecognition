@@ -23,11 +23,11 @@ Image::Image(Mat frame, bool convertToNdg = 0, bool convertToNdgAndEqualizeHisto
 	if (convertToLbp && !this->_frameNdg.empty())
 		this->_frameLbp = ConvertToLbp(this->_frameNdg);
 	if (createHistogramNdg && !this->_frameNdg.empty())
-		this->_histogramNdg = *(new Histogram(this->_frameNdg, 1, 0));
+		this->_histogramNdg = *(new Histogram(this->_frameNdg));
 	if (createHistogramLbp)
-		this->_histogramLbp = *(new Histogram(this->_frameLbp, 1, 0));
+		this->_histogramLbp = *(new Histogram(this->_frameLbp));
 	if (createHistogramColor)
-		this->_histogramColor = *(new Histogram(this->_frameCouleur, 0, 1));
+		this->_histogramColor = *(new Histogram(this->_frameCouleur));
 }
 
 Image::~Image()
@@ -40,6 +40,13 @@ Mat Image::ConvertToNdg(Mat frameColor, bool equalizeHistogram)
 	cvtColor(frameColor, frameNdg, COLOR_BGR2GRAY);
 	if (equalizeHistogram)
 		equalizeHist(frameNdg, frameNdg);
+	return (frameNdg);
+}
+
+Mat Image::ConvertToNdgFromNotColorImage(Mat frame, bool equalizeHistogram)
+{
+	Mat frameNdg;
+	frame.convertTo(frameNdg, CV_8UC1);
 	return (frameNdg);
 }
 
@@ -143,4 +150,11 @@ Mat Image::PreprocessingWithTanTrigs(InputArray src, float alpha, float tau, flo
 		I = tau * I;
 	}
 	return I;
+}
+
+Mat Image::resize(Mat frame, Size size)
+{
+	Mat rezized;
+	cv::resize(frame,rezized, size, 0, 0, INTER_LINEAR);
+	return(rezized);
 }
