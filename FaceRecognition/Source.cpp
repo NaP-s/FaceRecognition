@@ -84,6 +84,11 @@ int main(){
 				destroyAllWindows();
 				break;
 			}
+			if ((char)c == 'c') {
+				k = 0;
+				destroyAllWindows();
+				break;
+			}
 		}
 	}
 	else{
@@ -170,7 +175,8 @@ void detectAndDisplay(){
 
 	// Affichage des differentes images
 	imshow("WebCam", imageCamera->get_frameCouleur());
-	if (!imagePourTraitementAvecPretraitement->get_frameLbp().empty())
+	cvMoveWindow("WebCam", 0, 0);
+	if (!imagePourTraitementAvecPretraitement == NULL)
 	{
 		imshow("imageLBP", imagePourTraitement->get_frameLbp());
 		imshow("imageLBPAvecPretraitement", imagePourTraitementAvecPretraitement->get_frameLbp());
@@ -178,6 +184,12 @@ void detectAndDisplay(){
 		imshow("imageNDG_PourTraitementAvecPretraitement", imagePourTraitementAvecPretraitement->get_frameNdg());
 		imshow("imageHistogrammeLBP", imagePourTraitementAvecPretraitement->get_frameHistogramLbp().get_graphHistogram());
 		imshow("imageHistogrammeLBPAvecPretraitement", imagePourTraitement->get_frameHistogramLbp().get_graphHistogram());
+		cvMoveWindow("imageLBP", 1000, 0);
+		cvMoveWindow("imageNDG_PourTraitement", 1200, 0);
+		cvMoveWindow("imageHistogrammeLBP", 1400, 0);
+		cvMoveWindow("imageLBPAvecPretraitement", 1000, 500);
+		cvMoveWindow("imageNDG_PourTraitementAvecPretraitement", 1200, 500);
+		cvMoveWindow("imageHistogrammeLBPAvecPretraitement", 1400, 500);
 
 	}
 	else{
