@@ -26,6 +26,9 @@ Image *imageReduite;
 Image *imagePourTraitement;
 Image *imagePourTraitementAvecPretraitement;
 
+int nImage = 1;
+Mat image = imread("LBP_PP19.jpg", 1);
+
 #pragma region Fonction main : On lance nos Threads
 int main(){
 	// Execution de cvStartWindowThread pour pouvoir créer des Threads
@@ -53,6 +56,9 @@ int main(){
 	{
 		capture = cvCaptureFromCAM(0);
 	}
+
+
+
 	if (capture != 0){
 		while (k == 1){
 			// On récupère une image depuis la caméra
@@ -79,15 +85,17 @@ int main(){
 			}
 			// On appuie sur c pour quitter
 			int c = waitKey(1);
-			if ((char)c == 'c') {
+			if (char(c) == 'c') {
 				k = 0;
 				destroyAllWindows();
 				break;
 			}
-			if ((char)c == 'c') {
-				k = 0;
-				destroyAllWindows();
-				break;
+			if (char(c) == 's') {
+				if (imagePourTraitementAvecPretraitement != nullptr)
+				{
+					imwrite("LBP_PP" + std::to_string(nImage) + ".jpg", imagePourTraitementAvecPretraitement->get_frameLbp());
+					nImage++;
+				}
 			}
 		}
 	}
@@ -168,15 +176,17 @@ void detectAndDisplay(){
 		// Dessin du visage détecté sur l'image principale
 		Point pt1(faces[ic].x, faces[ic].y);
 		Point pt2((faces[ic].x + faces[ic].height), (faces[ic].y + faces[ic].width));
+		// ReSharper disable once CppMsExtBindingRValueToLvalueReference
 		rectangle(imageCamera->get_frameCouleur(), pt1, pt2, Scalar(0, 255, 0), 1, 8, 0);
 
+		// ReSharper disable CppMsExtBindingRValueToLvalueReference
 		putText(imageCamera->get_frameCouleur(), "Visage Detecte ici", cvPoint((faces[ic].x + faces[ic].width / 4), faces[ic].y - 10), FONT_HERSHEY_COMPLEX_SMALL, 0.8, cvScalar(0, 0, 255), 1, CV_AA);
 	}
 
 	// Affichage des differentes images
 	imshow("WebCam", imageCamera->get_frameCouleur());
 	cvMoveWindow("WebCam", 0, 0);
-	if (!imagePourTraitementAvecPretraitement == NULL)
+	if (imagePourTraitementAvecPretraitement != NULL)
 	{
 		imshow("imageLBP", imagePourTraitement->get_frameLbp());
 		imshow("imageLBPAvecPretraitement", imagePourTraitementAvecPretraitement->get_frameLbp());
@@ -190,6 +200,9 @@ void detectAndDisplay(){
 		cvMoveWindow("imageLBPAvecPretraitement", 1000, 500);
 		cvMoveWindow("imageNDG_PourTraitementAvecPretraitement", 1200, 500);
 		cvMoveWindow("imageHistogrammeLBPAvecPretraitement", 1400, 500);
+
+		imshow("imageRef", image);
+		cvMoveWindow("imageRef", 0, 600);
 
 	}
 	else{
