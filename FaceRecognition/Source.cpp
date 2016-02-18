@@ -166,11 +166,34 @@ void detectAndDisplay(){
 		rectangle(imageCamera->get_frameCouleur(), pt1, pt2, Scalar(0, 255, 0), 1, 8, 0);
 
 		putText(imageCamera->get_frameCouleur(), "Visage Detecte ici", cvPoint((faces[ic].x + faces[ic].width / 4), faces[ic].y - 10), FONT_HERSHEY_COMPLEX_SMALL, 0.8, cvScalar(0, 0, 255), 1, CV_AA);
+
+		/*	int histSize = 256;
+				float range[] = { 0, 256 };
+				const float* histRange = { range };
+				bool uniform = true; bool accumulate = true;
+				Mat ndg_hist;
+				calcHist(&frame, 1, 0, Mat(), ndg_hist, 1, &histSize, &histRange, uniform, accumulate);
+				normalize(ndg_hist, ndg_hist, 0, 1, NORM_MINMAX, -1, Mat());
+				
+
+				for (int i = 0; i < 4; i++)
+				{
+					int compare_method = i;
+					double h1_h2 = compareHist(ndg_hist, ndg_hist, compare_method);
+					double h2_h2 = compareHist(ndg_hist, ndg_hist, compare_method);
+					double h3_h2 = compareHist(ndg_hist, ndg_hist, compare_method);
+					double h4_h2 = compareHist(ndg_hist, ndg_hist, compare_method);
+
+					printf(" Method [%d] h1_h2, h2_h2, h3_h2, h4_h2 : %f, %f, %f, %f \n", i, h1_h2, h2_h2, h3_h2, h4_h2);
+				}*/
+
+
+
 	}
 
 	// Affichage des differentes images
 	imshow("WebCam", imageCamera->get_frameCouleur());
-	if (!imagePourTraitementAvecPretraitement->get_frameLbp().empty())
+	if (!imagePourTraitementAvecPretraitement == NULL)
 	{
 		imshow("imageLBP", imagePourTraitement->get_frameLbp());
 		imshow("imageLBPAvecPretraitement", imagePourTraitementAvecPretraitement->get_frameLbp());
