@@ -14,11 +14,16 @@
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Hist.cpp" />
     <ClCompile Include="Histogram.cpp" />
+    <ClCompile Include="ImageIntegral.cpp" />
+    <ClCompile Include="lbpfeatures.cpp" />
     <ClCompile Include="Source.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h" />
+    <ClInclude Include="ImageIntegral.h" />
+    <ClInclude Include="lbpfeatures.h" />
     <ClInclude Include="Histogram.h" />
+    <ClInclude Include="OpenCVCommon.h" />
   </ItemGroup>
   <ItemGroup>
     <Xml Include="haarcascade_eye_tree_eyeglasses.xml" />
@@ -68,7 +73,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_LIB;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>C:\OpenCV\build\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <EnablePREfast>true</EnablePREfast>
