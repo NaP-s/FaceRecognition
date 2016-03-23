@@ -111,9 +111,8 @@ void Histogram::CreateHistogrammeNDG(Mat frame)
 	}
 	this->_graphHistogram = histImage;
 	int const size = histSize;
-	this->_matriceHistogram = new int[size];
-	
-	for (int i = 0; i <= histSize-1; i++)
-		this->_matriceHistogram[i] = cvRound(ndg_hist.at<float>(i));
+	//this->_matriceHistogram = new int[256];
+	//for (int i = 0; i <= histSize-1; i++)
+	//	this->_matriceHistogram[i] = cvRound(ndg_hist.at<float>(i));
 	int i =0;
 }

@@ -17,8 +17,10 @@ public:
 
 	static Mat ConvertToNdg(Mat frameColor, bool equalizeHistogram);
 	static Mat ConvertToNdgFromNotColorImage(Mat frame, bool equalizeHistogram);
-	Mat ConvertToLbp(Mat frameNdg) const;
+	Mat ConvertToLbp(Mat frameNdg);
 	Mat CreateLbpImage(Mat frame) const;
+	template <class _Tp>
+	Mat CreateLbpImageExtended(const Mat& src, int radius, int neighbors);
 	Mat Normalize(const Mat src) const;
 	Mat PreprocessingWithTanTrigs(InputArray src, float alpha = 0.1, float tau = 10.0, float gamma = 0.2, int sigma0 = 1, int sigma1 = 2) const;
 

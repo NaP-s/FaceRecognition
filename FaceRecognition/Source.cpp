@@ -3,10 +3,12 @@
 #include "opencv2/objdetect/objdetect.hpp"
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
-#include <iostream>
 #include <stdio.h>
 #include "Traitements.h"
 #include"Image.h"
+
+#include <fstream>
+#include <iomanip>
 
 // Déclaration des namespace
 using namespace std;
@@ -26,10 +28,19 @@ Image *imageReduite;
 Image *imagePourTraitement;
 Image *imagePourTraitementAvecPretraitement;
 
+Image *image;
+
 int nImage = 1;
-Mat image = imread("LBP_PP19.jpg", 1);
+double h1_h2 = 0;
+Mat image1 = imread("LBP_PP1.jpg", CV_LOAD_IMAGE_GRAYSCALE);
+
+
+
 
 #pragma region Fonction main : On lance nos Threads
+void comparaison();
+
+
 int main(){
 	// Execution de cvStartWindowThread pour pouvoir créer des Threads
 	cvStartWindowThread();
@@ -38,6 +49,8 @@ int main(){
 	int k = 1;
 	CvCapture* capture;
 	Mat frame;
+
+	cv::resize(image1, image1, Size(256, 256));
 
 
 	// Chargement des cascades de détection => Si on n'y arrive pas alors on ferme l'application
@@ -72,6 +85,7 @@ int main(){
 				try
 				{
 					detectAndDisplay();
+					//comparaison();
 
 				}
 				catch (exception e)
@@ -138,8 +152,7 @@ void detectAndDisplay(){
 		roi_b.height = faces[ic].height;
 
 		// On créer une nouvelle image avec juste le visage en découpant une partie de l'image de la webCam
-		imageReduite = new Image( Image::resize(imageCamera->get_frameCouleur()(roi_b),Size(256,256)),1,0,1,0,0,0);
-		//resize(imageReduite->get_frameCouleur(), imageReduite->get_frameCouleur(), Size(256, 256), 0, 0, INTER_LINEAR);
+		imageReduite = new Image(Image::resize(imageCamera->get_frameCouleur()(roi_b), Size(256, 256)), 1, 0, 1, 0, 0, 0);
 
 		// On lance la détection des yeux : CV_HAAR_SCALE_IMAGE On cherche plusieurs objets ; Size(15, 15) => De taille minimum 15*15 pixels
 		// La position des yeux vas nous permettre de pouvoir redecouper notre image en etant resserré sur le visage. On ne voit donc plus le fond.
@@ -160,14 +173,14 @@ void detectAndDisplay(){
 				roi_c.width = (eyes[0].x + 65) - roi_c.x;
 				roi_c.height = 190;
 			}
-			imagePourTraitement = new Image(Image::resize(imageReduite->get_frameCouleur()(roi_c),Size(128, 128)), 1, 0, 1, 0, 0, 1);
-			////resize(imagePourTraitement->get_frameNdg(), imagePourTraitement->get_frameNdg(), Size(128, 128), 0, 0, INTER_LINEAR);
+			//imagePourTraitement = new Image(Image::resize(imageReduite->get_frameCouleur()(roi_c), Size(256, 256)), 1, 0, 1, 0, 0, 1);
 
 			// On crée notre / nos images LBP
-			imagePourTraitementAvecPretraitement = new Image(imagePourTraitement->get_frameCouleur(), 1, 0, 0, 0, 0, 0);
-			imagePourTraitementAvecPretraitement->set_frameNdg(imagePourTraitement->Normalize(imagePourTraitement->PreprocessingWithTanTrigs(imagePourTraitement->get_frameNdg())));
+			//imagePourTraitementAvecPretraitement = new Image(imagePourTraitement->get_frameCouleur(), 1, 0, 0, 0, 0, 0);
+			imagePourTraitementAvecPretraitement = new Image(Image::resize(imageReduite->get_frameCouleur()(roi_c), Size(256, 256)), 1, 0, 0, 0, 0, 0);
+			imagePourTraitementAvecPretraitement->set_frameNdg(imagePourTraitementAvecPretraitement->Normalize(imagePourTraitementAvecPretraitement->PreprocessingWithTanTrigs(imagePourTraitementAvecPretraitement->get_frameNdg())));
 
-			imagePourTraitementAvecPretraitement->set_frameLbp(imagePourTraitement->CreateLbpImage(imagePourTraitement->Normalize(imagePourTraitement->PreprocessingWithTanTrigs(imagePourTraitement->get_frameNdg()))));
+			imagePourTraitementAvecPretraitement->set_frameLbp(imagePourTraitementAvecPretraitement->CreateLbpImage(imagePourTraitementAvecPretraitement->Normalize(imagePourTraitementAvecPretraitement->PreprocessingWithTanTrigs(imagePourTraitementAvecPretraitement->get_frameNdg()))));
 			// On trace notre histogramme depuis notre image LBP
 			imagePourTraitementAvecPretraitement->set_histogramLbp(*new Histogram(imagePourTraitementAvecPretraitement->get_frameLbp()));
 
@@ -178,32 +191,27 @@ void detectAndDisplay(){
 		Point pt2((faces[ic].x + faces[ic].height), (faces[ic].y + faces[ic].width));
 		// ReSharper disable once CppMsExtBindingRValueToLvalueReference
 		rectangle(imageCamera->get_frameCouleur(), pt1, pt2, Scalar(0, 255, 0), 1, 8, 0);
+		if (imagePourTraitementAvecPretraitement != NULL)
+		{
+			int histSize = 256;
+			float range[] = { 0, 256 };
+			const float* histRange = { range };
+			bool uniform = true; bool accumulate = true;
+			Mat ndg_lbp;
+			Mat ndg_lbpREf;
+
+
+			calcHist(&imagePourTraitementAvecPretraitement->get_frameLbp(), 1, 0, Mat(), ndg_lbp, 1, &histSize, &histRange, uniform, accumulate);
+			calcHist(&image1, 1, 0, Mat(), ndg_lbpREf, 1, &histSize, &histRange, uniform, accumulate);
+
+			normalize(ndg_lbp, ndg_lbp, 0, 1, NORM_MINMAX, -1, Mat());
+			normalize(ndg_lbpREf, ndg_lbpREf, 0, 1, NORM_MINMAX, -1, Mat());
+
+			h1_h2 = compareHist(ndg_lbp, ndg_lbpREf, CV_COMP_CHISQR);
+		}
 
 		// ReSharper disable CppMsExtBindingRValueToLvalueReference
-		putText(imageCamera->get_frameCouleur(), "Visage Detecte ici", cvPoint((faces[ic].x + faces[ic].width / 4), faces[ic].y - 10), FONT_HERSHEY_COMPLEX_SMALL, 0.8, cvScalar(0, 0, 255), 1, CV_AA);
-
-		/*	int histSize = 256;
-				float range[] = { 0, 256 };
-				const float* histRange = { range };
-				bool uniform = true; bool accumulate = true;
-				Mat ndg_hist;
-				calcHist(&frame, 1, 0, Mat(), ndg_hist, 1, &histSize, &histRange, uniform, accumulate);
-				normalize(ndg_hist, ndg_hist, 0, 1, NORM_MINMAX, -1, Mat());
-				
-
-				for (int i = 0; i < 4; i++)
-				{
-					int compare_method = i;
-					double h1_h2 = compareHist(ndg_hist, ndg_hist, compare_method);
-					double h2_h2 = compareHist(ndg_hist, ndg_hist, compare_method);
-					double h3_h2 = compareHist(ndg_hist, ndg_hist, compare_method);
-					double h4_h2 = compareHist(ndg_hist, ndg_hist, compare_method);
-
-					printf(" Method [%d] h1_h2, h2_h2, h3_h2, h4_h2 : %f, %f, %f, %f \n", i, h1_h2, h2_h2, h3_h2, h4_h2);
-				}*/
-
-
-
+		putText(imageCamera->get_frameCouleur(), "Visage Detecte ici : Score " + std::to_string(h1_h2), cvPoint((faces[ic].x + faces[ic].width / 4), faces[ic].y - 10), FONT_HERSHEY_COMPLEX_SMALL, 0.8, cvScalar(0, 0, 255), 1, CV_AA);
 	}
 
 	// Affichage des differentes images
@@ -211,34 +219,151 @@ void detectAndDisplay(){
 	cvMoveWindow("WebCam", 0, 0);
 	if (imagePourTraitementAvecPretraitement != NULL)
 	{
-		imshow("imageLBP", imagePourTraitement->get_frameLbp());
+		//imshow("imageLBP", imagePourTraitement->get_frameLbp());
 		imshow("imageLBPAvecPretraitement", imagePourTraitementAvecPretraitement->get_frameLbp());
-		imshow("imageNDG_PourTraitement", imagePourTraitement ->get_frameNdg());
+		//imshow("imageNDG_PourTraitement", imagePourTraitement->get_frameNdg());
 		imshow("imageNDG_PourTraitementAvecPretraitement", imagePourTraitementAvecPretraitement->get_frameNdg());
-		imshow("imageHistogrammeLBP", imagePourTraitementAvecPretraitement->get_frameHistogramLbp().get_graphHistogram());
-		imshow("imageHistogrammeLBPAvecPretraitement", imagePourTraitement->get_frameHistogramLbp().get_graphHistogram());
-		cvMoveWindow("imageLBP", 1000, 0);
-		cvMoveWindow("imageNDG_PourTraitement", 1200, 0);
-		cvMoveWindow("imageHistogrammeLBP", 1400, 0);
-		cvMoveWindow("imageLBPAvecPretraitement", 1000, 500);
-		cvMoveWindow("imageNDG_PourTraitementAvecPretraitement", 1200, 500);
+		//imshow("imageHistogrammeLBP", imagePourTraitement->get_frameHistogramLbp().get_graphHistogram());
+		imshow("imageHistogrammeLBPAvecPretraitement", imagePourTraitementAvecPretraitement->get_frameHistogramLbp().get_graphHistogram());
+		//cvMoveWindow("imageLBP", 800, 0);
+		//cvMoveWindow("imageNDG_PourTraitement", 1100, 0);
+		//cvMoveWindow("imageHistogrammeLBP", 1400, 0);
+		cvMoveWindow("imageLBPAvecPretraitement", 800, 500);
+		cvMoveWindow("imageNDG_PourTraitementAvecPretraitement", 1100, 500);
 		cvMoveWindow("imageHistogrammeLBPAvecPretraitement", 1400, 500);
 
-		imshow("imageRef", image);
+		imshow("imageRef", image1);
 		cvMoveWindow("imageRef", 0, 600);
 
 	}
 	else{
-		destroyWindow("imageLBP");
+		//destroyWindow("imageLBP");
 		destroyWindow("imageLBPAvecPretraitement");
-		destroyWindow("imageNDG_PourTraitement");
+		//destroyWindow("imageNDG_PourTraitement");
 		destroyWindow("imageNDG_PourTraitementAvecPretraitement");
-		destroyWindow("imageHistogrammeLBP");
+		//destroyWindow("imageHistogrammeLBP");
 		destroyWindow("imageHistogrammeLBPAvecPretraitement");
 	}
 }
 #pragma endregion
 
 
+#pragma region Comparaison
+void comparaison()
+{
+	Image image = Image(image1, 1, 1, 1, 0, 0, 1);
+	//Image image1 = Image(image21, 1, 1, 1, 0, 0, 1);
+	Mat imageMat;
+	stringstream text1, text2, text3, fichier;
+	int val = 0;
+	int i = 0;
+	int j = 0;
+	int histSize = 256;
+	float range[] = { 0, 256 };
+	const float* histRange = { range };
+	bool uniform = true; bool accumulate = true;
+	uchar intensity = 0;
+	unsigned char *input = reinterpret_cast<unsigned char*>(&image.get_frameLbp());
 
+
+	imshow("Image", image.get_frameNdg());
+	imshow("ImageLbp", image.get_frameLbp());
+	imshow("ImageHisto", image.get_frameHistogramLbp().get_graphHistogram());
+
+	/*imshow("Image1", image1.get_frameNdg());
+	imshow("ImageLbp1", image1.get_frameLbp());
+	imshow("ImageHisto1", image1.get_frameHistogramLbp().get_graphHistogram());
+	*/
+	Mat HistoJu1;
+	Mat HistoLu1;
+
+	calcHist(&image.get_frameLbp(), 1, 0, Mat(), HistoJu1, 1, &histSize, &histRange, uniform, accumulate);
+	//calcHist(&image1.get_frameLbp(), 1, 0, Mat(), HistoLu1, 1, &histSize, &histRange, uniform, accumulate);
+
+	double lu1_lu2 = compareHist(HistoLu1, HistoJu1, CV_COMP_CHISQR);
+
+	imageMat = image.get_frameLbp();
+
+	fichier << "Histo.txt";
+	ofstream f(fichier.str().c_str());
+
+	if (!f.is_open())
+		std::cout << "Impossible d'ouvrir le fichier en ecriture !" << std::endl;
+	else
+	{
+		int Histo[256] = { 0 };
+
+		i = 0;
+		j = 0;
+
+		for (i = 0; i < imageMat.rows; i++)
+			for (j = 0; j < imageMat.cols; j++)
+			{
+				intensity = imageMat.at<uchar>(i, j);
+				Histo[intensity]++;
+			}
+		for (int k = 0; k < 256; k++)
+		{
+			f << Histo[k] << " ";
+
+		}
+		f << endl;
+
+
+		/*
+		Mat HistoJu1;
+		Mat HistoJu2;
+		Mat HistoJu3;
+		Mat HistoJu4;
+
+		Mat HistoLu1;
+		Mat HistoLu2;
+		Mat HistoLu3;
+		Mat HistoLu4;
+
+		Mat imageJu1 = imread("Julien/LBP_PP19.jpg", CV_LOAD_IMAGE_GRAYSCALE);
+		Mat imageJu2 = imread("Julien/LBP_PP20.jpg", CV_LOAD_IMAGE_GRAYSCALE);
+		Mat imageJu3 = imread("Julien/LBP_PP21.jpg", CV_LOAD_IMAGE_GRAYSCALE);
+		Mat imageJu4 = imread("Julien/LBP_PP22.jpg", CV_LOAD_IMAGE_GRAYSCALE);
+
+
+		Mat imageLu1 = imread("Lucas/LBP_PP1.jpg", CV_LOAD_IMAGE_GRAYSCALE);
+		Mat imageLu2 = imread("Lucas/LBP_PP2.jpg", CV_LOAD_IMAGE_GRAYSCALE);
+		Mat imageLu3 = imread("Lucas/LBP_PP3.jpg", CV_LOAD_IMAGE_GRAYSCALE);
+		Mat imageLu4 = imread("Lucas/LBP_PP4.jpg", CV_LOAD_IMAGE_GRAYSCALE);
+
+		int histSize = 256;
+		float range[] = { 0, 256 };
+		const float* histRange = { range };
+		bool uniform = true; bool accumulate = true;
+
+		calcHist(&imageJu1, 1, 0, Mat(), HistoJu1, 1, &histSize, &histRange, uniform, accumulate);
+		calcHist(&imageJu2, 1, 0, Mat(), HistoJu2, 1, &histSize, &histRange, uniform, accumulate);
+		calcHist(&imageJu3, 1, 0, Mat(), HistoJu3, 1, &histSize, &histRange, uniform, accumulate);
+		calcHist(&imageJu4, 1, 0, Mat(), HistoJu4, 1, &histSize, &histRange, uniform, accumulate);
+
+		calcHist(&imageLu1, 1, 0, Mat(), HistoLu1, 1, &histSize, &histRange, uniform, accumulate);
+		calcHist(&imageLu2, 1, 0, Mat(), HistoLu2, 1, &histSize, &histRange, uniform, accumulate);
+		calcHist(&imageLu3, 1, 0, Mat(), HistoLu3, 1, &histSize, &histRange, uniform, accumulate);
+		calcHist(&imageLu4, 1, 0, Mat(), HistoLu4, 1, &histSize, &histRange, uniform, accumulate);
+
+		imshow("LBP_PP1_JU", imageJu1);
+		imshow("LBP_PP2_JU", imageJu2);
+		imshow("LBP_PP3JU", imageJu3);
+		imshow("LBP_PP4_JU", imageJu4);
+		imshow("LBP_PP1_LU", imageLu1);
+		imshow("LBP_PP2_LU", imageLu2);
+		imshow("LBP_PP3_LU", imageLu3);
+		imshow("LBP_PP4_LU", imageLu4);
+
+		double lu1_lu2 = compareHist(HistoLu1, HistoLu2, CV_COMP_CHISQR);
+		double ju1_lu1 = compareHist(HistoJu1, HistoLu1, CV_COMP_CHISQR);
+		double ju2_lu2 = compareHist(HistoJu2, HistoLu2, CV_COMP_CHISQR);
+
+		Ptr<FaceRecognizer>  createLBPHFaceRecognizer(int radius = 1, int neighbors = 8, int grid_x = 8, int grid_y = 8, double threshold = DBL_MAX);*/
+	}
+	f.close();
+}
+
+#pragma endregion 
 

@@ -20,7 +20,7 @@ public:
 	}
 private:
 	Mat _graphHistogram;
-	int *_matriceHistogram;
+	int* _matriceHistogram;
 
 };
 
