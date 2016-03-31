@@ -52,9 +52,6 @@ Mat Traitements::HistogrammeCouleur(Mat frame)
 	}
 	return(histImage);
 }
-
-
-
 Mat Traitements::HistogrammeNDG(Mat frame)
 {
 	//Histogramme
