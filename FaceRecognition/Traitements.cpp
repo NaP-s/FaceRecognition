@@ -98,14 +98,36 @@ Mat Traitements::LBP(Mat img){
 		for (int j = 1; j < img.cols - 1; j++) {
 			uchar center = img.at<uchar>(i, j);
 			unsigned char code = 0;
-			code |= ((img.at<uchar>(i - 1, j - 1)) > center) << 7;
-			code |= ((img.at<uchar>(i - 1, j)) > center) << 6;
-			code |= ((img.at<uchar>(i - 1, j + 1)) > center) << 5;
-			code |= ((img.at<uchar>(i, j + 1)) > center) << 4;
-			code |= ((img.at<uchar>(i + 1, j + 1)) > center) << 3;
-			code |= ((img.at<uchar>(i + 1, j)) > center) << 2;
-			code |= ((img.at<uchar>(i + 1, j - 1)) > center) << 1;
-			code |= ((img.at<uchar>(i, j - 1)) > center) << 0;
+			bool b;
+			uchar val;
+			val = img.at<uchar>(i - 1, j - 1);
+			val = img.at<uchar>(i - 1, j);
+			val = img.at<uchar>(i - 1, j + 1);
+			val = img.at<uchar>(i, j + 1);
+			val = img.at<uchar>(i + 1, j + 1);
+			val = img.at<uchar>(i + 1, j);
+			val = img.at<uchar>(i + 1, j - 1);
+			val = img.at<uchar>(i, j - 1);
+
+			b = ((img.at<uchar>(i - 1, j - 1)) >= center) << 7;
+			b = ((img.at<uchar>(i - 1, j)) >= center) << 6;
+			b = ((img.at<uchar>(i - 1, j + 1)) >= center) << 5;
+			b = ((img.at<uchar>(i, j + 1)) >= center) << 4;
+			b =  ((img.at<uchar>(i + 1, j + 1)) > center) << 3;
+			b = ((img.at<uchar>(i + 1, j)) >= center) << 2;
+			b = ((img.at<uchar>(i + 1, j - 1)) >= center) << 1;
+			b = ((img.at<uchar>(i, j - 1)) >= center) << 0;
+
+
+
+			code |= ((img.at<uchar>(i - 1, j - 1)) >= center) << 7;
+			code |= ((img.at<uchar>(i - 1, j)) >= center) << 6;
+			code |= ((img.at<uchar>(i - 1, j + 1)) >= center) << 5;
+			code |= ((img.at<uchar>(i, j + 1)) >= center) << 4;
+			code |= ((img.at<uchar>(i + 1, j + 1)) >= center) << 3;
+			code |= ((img.at<uchar>(i + 1, j)) >= center) << 2;
+			code |= ((img.at<uchar>(i + 1, j - 1)) >= center) << 1;
+			code |= ((img.at<uchar>(i, j - 1)) >= center) << 0;
 			dst.at<uchar>(i - 1, j - 1) = code;
 		}
 	}

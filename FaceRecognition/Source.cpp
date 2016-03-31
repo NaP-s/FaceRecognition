@@ -22,6 +22,41 @@ CascadeClassifier eyes_cascade;
 
 #pragma region Fonction main : On lance nos Threads
 int main(){
+
+	Mat frame = imread("D:\\trait.png", CV_LOAD_IMAGE_GRAYSCALE);
+	Mat frame2 = imread("D:\\trait2.png", CV_LOAD_IMAGE_GRAYSCALE);
+	if (frame.empty())
+	{
+		std::cout << "!!! Failed imread(): image not found" << std::endl;
+		waitKey(0);
+		// don't let the execution continue, else imshow() will crash.
+	}
+
+	Mat lbp1 = Traitements::LBP(frame);
+	Mat lbp2 = Traitements::LBP(frame2);
+	uchar intensity[4];
+	uchar intensity2[4];
+
+	namedWindow("LBP1", WINDOW_AUTOSIZE);// Create a window for display.
+	imshow("LBP1", lbp1);
+	namedWindow("LBP2", WINDOW_AUTOSIZE);// Create a window for display.
+	imshow("LBP2", lbp2);
+	
+	intensity[0] = lbp1.at<uchar>(0, 0);
+	intensity[1] = lbp1.at<uchar>(0, 1);
+	intensity[2] = lbp1.at<uchar>(1, 0);
+	intensity[3] = lbp1.at<uchar>(1, 1);
+
+	intensity2[0] = lbp2.at<uchar>(0, 0);
+	intensity2[1] = lbp2.at<uchar>(0, 1);
+	intensity2[2] = lbp2.at<uchar>(1, 0);
+	intensity2[3] = lbp2.at<uchar>(1, 1);
+
+
+		
+	waitKey(0);
+
+	/*
 	// Execution de cvStartWindowThread pour pouvoir créer des Threads
 	cvStartWindowThread();
 
@@ -180,7 +215,7 @@ void detectAndDisplay(Mat frame){
 		destroyWindow("imageLBP");
 		destroyWindow("imageNDG_PourTraitement");
 		destroyWindow("imageHistogrammeLBP");
-	}
+	}*/
 }
 #pragma endregion
 
