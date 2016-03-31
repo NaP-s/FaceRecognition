@@ -40,8 +40,73 @@ Mat image1 = imread("LBP_PP1.jpg", CV_LOAD_IMAGE_GRAYSCALE);
 #pragma region Fonction main : On lance nos Threads
 void comparaison();
 
-
 int main(){
+
+	Mat frame = imread("D:\\trait.png", CV_LOAD_IMAGE_GRAYSCALE);
+	Mat frame2 = imread("D:\\trait2.png", CV_LOAD_IMAGE_GRAYSCALE);
+	if (frame.empty())
+	{
+		std::cout << "!!! Failed imread(): image not found" << std::endl;
+		waitKey(0);
+		// don't let the execution continue, else imshow() will crash.
+	}
+
+	Mat lbp1 = Traitements::LBP(frame);
+	Mat lbp2 = Traitements::LBP(frame2);
+	uchar intensity[4];
+	uchar intensity2[4];
+
+	namedWindow("LBP1", WINDOW_AUTOSIZE);// Create a window for display.
+	imshow("LBP1", lbp1);
+	namedWindow("LBP2", WINDOW_AUTOSIZE);// Create a window for display.
+	imshow("LBP2", lbp2);
+
+	intensity[0] = lbp1.at<uchar>(0, 0);
+	intensity[1] = lbp1.at<uchar>(0, 1);
+	intensity[2] = lbp1.at<uchar>(1, 0);
+	intensity[3] = lbp1.at<uchar>(1, 1);
+
+	intensity2[0] = lbp2.at<uchar>(0, 0);
+	intensity2[1] = lbp2.at<uchar>(0, 1);
+	intensity2[2] = lbp2.at<uchar>(1, 0);
+	intensity2[3] = lbp2.at<uchar>(1, 1);
+
+	vector<int> v,v2;
+
+	v = Traitements::CreateHistograme(lbp1);
+	v2 = Traitements::CreateHistograme(lbp2);
+
+	InputArray array1(v);
+	InputArray array2(v2);
+
+	try
+	{
+		int histSize = 255;
+		float range[] = { 0, 255 };
+		const float* histRange = { range };
+		bool uniform = true;
+		bool accumulate = false;
+		cv::Mat a1_hist, a2_hist;
+
+		cv::calcHist(&lbp1, 1, 0, cv::Mat(), a1_hist, 1, &histSize, &histRange, uniform, accumulate);
+		cv::calcHist(&lbp2, 1, 0, cv::Mat(), a2_hist, 1, &histSize, &histRange, uniform, accumulate);
+
+		double compar_chi = cv::compareHist(a1_hist, a2_hist, CV_COMP_CHISQR);
+
+	//double comp = compareHist(lbp1, lbp2, CV_COMP_CHISQR);
+	}
+	catch (Exception e)
+	{
+		std::cout << e.err << std::endl;
+	}
+
+	//Mat histo;
+
+	//calcHist(&lbp1, 1, 0, Mat(), histo, 1, 255, { 0, 255 }, false, false);
+
+	waitKey(0);
+
+	/*
 	// Execution de cvStartWindowThread pour pouvoir créer des Threads
 	cvStartWindowThread();
 
@@ -270,10 +335,9 @@ void comparaison()
 	imshow("ImageLbp", image.get_frameLbp());
 	imshow("ImageHisto", image.get_frameHistogramLbp().get_graphHistogram());
 
-	/*imshow("Image1", image1.get_frameNdg());
+	imshow("Image1", image1.get_frameNdg());
 	imshow("ImageLbp1", image1.get_frameLbp());
 	imshow("ImageHisto1", image1.get_frameHistogramLbp().get_graphHistogram());
-	*/
 	Mat HistoJu1;
 	Mat HistoLu1;
 
@@ -309,8 +373,6 @@ void comparaison()
 		}
 		f << endl;
 
-
-		/*
 		Mat HistoJu1;
 		Mat HistoJu2;
 		Mat HistoJu3;
@@ -360,9 +422,9 @@ void comparaison()
 		double ju1_lu1 = compareHist(HistoJu1, HistoLu1, CV_COMP_CHISQR);
 		double ju2_lu2 = compareHist(HistoJu2, HistoLu2, CV_COMP_CHISQR);
 
-		Ptr<FaceRecognizer>  createLBPHFaceRecognizer(int radius = 1, int neighbors = 8, int grid_x = 8, int grid_y = 8, double threshold = DBL_MAX);*/
+		Ptr<FaceRecognizer>  createLBPHFaceRecognizer(int radius = 1, int neighbors = 8, int grid_x = 8, int grid_y = 8, double threshold = DBL_MAX);
 	}
-	f.close();
+	f.close();*/
 }
 
 #pragma endregion 
