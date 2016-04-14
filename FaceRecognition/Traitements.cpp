@@ -86,6 +86,7 @@ Mat Traitements::HistogrammeNDG(Mat frame)
 			Point(bin_w*(i), hist_h - cvRound(ndg_hist.at<float>(i))),
 			Scalar(255, 255, 255), 2, 8, 0);
 	}
+	//Mat mat =
 	/// Return
 	return histImage;
 }
@@ -95,28 +96,6 @@ Mat Traitements::LBP(Mat img){
 		for (int j = 1; j < img.cols - 1; j++) {
 			uchar center = img.at<uchar>(i, j);
 			unsigned char code = 0;
-			bool b;
-			uchar val;
-			val = img.at<uchar>(i - 1, j - 1);
-			val = img.at<uchar>(i - 1, j);
-			val = img.at<uchar>(i - 1, j + 1);
-			val = img.at<uchar>(i, j + 1);
-			val = img.at<uchar>(i + 1, j + 1);
-			val = img.at<uchar>(i + 1, j);
-			val = img.at<uchar>(i + 1, j - 1);
-			val = img.at<uchar>(i, j - 1);
-
-			b = ((img.at<uchar>(i - 1, j - 1)) >= center) << 7;
-			b = ((img.at<uchar>(i - 1, j)) >= center) << 6;
-			b = ((img.at<uchar>(i - 1, j + 1)) >= center) << 5;
-			b = ((img.at<uchar>(i, j + 1)) >= center) << 4;
-			b =  ((img.at<uchar>(i + 1, j + 1)) > center) << 3;
-			b = ((img.at<uchar>(i + 1, j)) >= center) << 2;
-			b = ((img.at<uchar>(i + 1, j - 1)) >= center) << 1;
-			b = ((img.at<uchar>(i, j - 1)) >= center) << 0;
-
-
-
 			code |= ((img.at<uchar>(i - 1, j - 1)) >= center) << 7;
 			code |= ((img.at<uchar>(i - 1, j)) >= center) << 6;
 			code |= ((img.at<uchar>(i - 1, j + 1)) >= center) << 5;
@@ -132,8 +111,23 @@ Mat Traitements::LBP(Mat img){
 }
 
 
+vector<int> Traitements::CreateHistograme(Mat image)
+{
+	std::vector<int> vector1(256, 0);
+	int with = image.size().width;
+	int height = image.size().height;
+
+	for (int i = 0; i < with ; i++)
+		for (int j = 0; j < height; j++)
+		{
+			vector1.at(image.at<uchar>(i, j)) += 1;
+		}
+	return vector1;
+}
+
+
 // Comparaison d'histo
-int comp(Mat a, Mat b, Mat c)
+int Traitements::comp(Mat a, Mat b, Mat c)
 {
 	Mat src_base, hsv_base;
 	Mat src_test1, hsv_test1;
