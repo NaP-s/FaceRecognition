@@ -107,7 +107,14 @@ int main(){
 			if (char(c) == 's') {
 				if (imagePourTraitementAvecPretraitement != nullptr)
 				{
-					imwrite("LBP_PP" + std::to_string(nImage) + ".jpg", imagePourTraitementAvecPretraitement->get_frameLbp());
+					imwrite("NdgCharlot" + std::to_string(nImage) + ".jpg", imagePourTraitementAvecPretraitement->get_frameNdg());
+					nImage++;
+				}
+			}
+			if (char(c) == 'x') {
+				if (imagePourTraitementAvecPretraitement != nullptr)
+				{
+					imwrite("NdgLio" + std::to_string(nImage) + ".jpg", imagePourTraitementAvecPretraitement->get_frameNdg());
 					nImage++;
 				}
 			}
