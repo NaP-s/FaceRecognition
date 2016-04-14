@@ -42,8 +42,8 @@ void comparaison();
 
 int main(){
 
-	Mat frame = imread("D:\\trait.png", CV_LOAD_IMAGE_GRAYSCALE);
-	Mat frame2 = imread("D:\\trait2.png", CV_LOAD_IMAGE_GRAYSCALE);
+	Mat frame = imread("Ndg1.jpg", CV_LOAD_IMAGE_GRAYSCALE);
+	Mat frame2 = imread("NdgLucas1.jpg", CV_LOAD_IMAGE_GRAYSCALE);
 	if (frame.empty())
 	{
 		std::cout << "!!! Failed imread(): image not found" << std::endl;
