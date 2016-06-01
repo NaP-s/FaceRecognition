@@ -188,16 +188,6 @@ int main(){
 	ShowImageOverlay(julien1, "im1");
 	ShowImageOverlay(lio1, "im2");
 
-	/*ChiDeu(lucas_lbp3, charlot_lbp1, 8, 8);
-	double scoreTotal = 0;
-	int i = 1;
-	for each (double var in score)
-	{
-	cout << std::to_string(i) + " : " + std::to_string(var) << endl;
-	scoreTotal += var;
-	i++;
-	}
-	cout << "Score total " << scoreTotal << endl;*/
 
 	list<Mat> imagesJulien = { julien_lbp1, julien_lbp2, julien_lbp3, julien_lbp4 };
 	list<Mat> imagesLucas = { lucas_lbp1, lucas_lbp2, lucas_lbp3, lucas_lbp4 };
