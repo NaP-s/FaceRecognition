@@ -116,10 +116,11 @@ vector<int> Traitements::CreateHistograme(Mat image)
 	std::vector<int> vector1(256, 0);
 	int with = image.size().width;
 	int height = image.size().height;
-
+	int temp;
 	for (int i = 0; i < with ; i++)
 		for (int j = 0; j < height; j++)
 		{
+			temp = image.at<uchar>(i, j);
 			vector1.at(image.at<uchar>(i, j)) += 1;
 		}
 	return vector1;

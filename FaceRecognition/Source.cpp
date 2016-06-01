@@ -16,6 +16,7 @@ using namespace cv;
 
 // Function Headers
 void detectAndDisplay();
+void ShowImageOverlay(Mat imageToDisplay, String name);
 
 // Global variables
 String face_cascade_name = "haarcascade_frontalface_alt.xml";
@@ -34,19 +35,89 @@ int nImage = 1;
 double h1_h2 = 0;
 Mat image1 = imread("LBP_PP1.jpg", CV_LOAD_IMAGE_GRAYSCALE);
 
-class ImageTT
+void ShowImageOverlay(Mat imageToDisplay, String name)
 {
-public:
-	Mat imageMat;
-	string name;
+	Mat mat_img(imageToDisplay);
+	int stepSize = mat_img.rows / 8;
 
-	ImageTT();
-	ImageTT(Mat m, String s)
+	int width = mat_img.size().width;
+	int height = mat_img.size().height;
+
+	for (int i = 0; i < height; i += stepSize)
+		cv::line(mat_img, Point(0, i), Point(width, i), cv::Scalar(255, 0, 0));
+
+	for (int i = 0; i < width; i += stepSize)
+		cv::line(mat_img, Point(i, 0), Point(i, height), cv::Scalar(255, 0, 0));
+	namedWindow(name);
+	imshow(name, mat_img);
+}
+
+
+vector<double> ChiDeu(Mat img_VisageLBP1, Mat img_VisageLBP2, int splitX, int splitY)
+{
+	vector<double> score(64, 0);
+	vector<int> mapPonderation{ 0, 0, 0, 0, 0, 0, 0, 0, 2, 4, 4, 1, 1, 4, 4, 2, 1, 1, 1, 0, 0, 1, 1, 1, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 1, 2, 2, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 2, 2, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0 };
+	int Nbcomp = splitY*splitX;
+
+	int width = img_VisageLBP1.size().width;
+	int height = img_VisageLBP1.size().height;
+	int stepSize = img_VisageLBP1.rows / 8;
+
+	int z = 0;
+	int histSize = 255;
+	float range[] = { 0, 255 };
+	const float* histRange = { range };
+	bool uniform = true;
+	bool accumulate = false;
+	cv::Mat a1_hist, a2_hist;
+
+	//initialisation du tableau de scores (16 valeurs)
+
+	for (int h = 0; h + stepSize < height; h += stepSize)
 	{
-		imageMat = m;
-		name = s;
+
+		for (int g = 0; g + stepSize < width; g += stepSize)
+
+		{
+			// 1) on crée un rectangle qui va sélectionner la partie à découper
+			// on le crée avec un point (x,y), une longueur, une largeur
+
+			CvRect ROI = cvRect(h, g, stepSize, stepSize);
+			Mat img_dest1 = img_VisageLBP1(ROI);
+			Mat img_dest2 = img_VisageLBP2(ROI);
+			/*namedWindow(std::to_string(z));
+			imshow(std::to_string(z), img_dest1);
+			*/
+
+
+			/*cv::calcHist(&img_dest1, 1, 0, cv::Mat(), a1_hist, 1, &histSize, &histRange, uniform, accumulate);
+			cv::calcHist(&img_dest2, 1, 0, cv::Mat(), a2_hist, 1, &histSize, &histRange, uniform, accumulate);*/
+
+			//score[z] = cv::compareHist(a1_hist, a2_hist, CV_COMP_CHISQR);
+
+			vector<int> hist1 = Traitements::CreateHistograme(img_dest1);
+
+			vector<int> hist2 = Traitements::CreateHistograme(img_dest2);
+
+			for (int nbBin = 0; nbBin <= 255; nbBin++)
+			{
+				if ((hist1[nbBin] + hist2[nbBin]) == 0)
+					score[z] += 0;
+				else
+					score[z] += (((hist1[nbBin] - hist2[nbBin])*(hist1[nbBin] - hist2[nbBin])) / (hist1[nbBin] + hist2[nbBin])); // Calcul du Khi-deux et insertion dans un tableau scores : 16 valeurs à la fin
+			}
+
+			score[z] *= mapPonderation[z];
+			z++;
+		}
+
 	}
-};
+
+	// Puis multiplication avec un tableau contenant le poids de chaque ROI pour avoir le scores final
+	return score;
+
+}
+
 
 
 #pragma region Fonction main : On lance nos Threads
@@ -110,99 +181,51 @@ int main(){
 	Mat charlot_lbp4 = Traitements::LBP(charlot4);
 
 
-	uchar intensity[4];
-	uchar intensity2[4];
+	// Comparaison avec méthode Lucas
 
+	ShowImageOverlay(julien_lbp1, "lbp1");
+	ShowImageOverlay(lio_lbp1, "lbp2");
+	ShowImageOverlay(julien1, "im1");
+	ShowImageOverlay(lio1, "im2");
+
+	/*ChiDeu(lucas_lbp3, charlot_lbp1, 8, 8);
+	double scoreTotal = 0;
+	int i = 1;
+	for each (double var in score)
+	{
+	cout << std::to_string(i) + " : " + std::to_string(var) << endl;
+	scoreTotal += var;
+	i++;
+	}
+	cout << "Score total " << scoreTotal << endl;*/
 
 	list<Mat> imagesJulien = { julien_lbp1, julien_lbp2, julien_lbp3, julien_lbp4 };
 	list<Mat> imagesLucas = { lucas_lbp1, lucas_lbp2, lucas_lbp3, lucas_lbp4 };
 	list<Mat> imagesLio = { lio_lbp1, lio_lbp2, lio_lbp3, lio_lbp4 };
 	list<Mat> imagesCharlot = { charlot_lbp1, charlot_lbp2, charlot_lbp3, charlot_lbp4 };
-	ImageTT ju1(julien_lbp1, "julien1");
 
-	ImageTT images[] = { ImageTT(julien_lbp1, "julien1"), ImageTT(julien_lbp2, "julien2"), ImageTT(julien_lbp3, "julien3"), ImageTT(julien_lbp4, "julien4"), ImageTT(lucas_lbp1, "lucas1"), ImageTT(lucas_lbp2, "lucas2"), ImageTT(lucas_lbp3, "lucas3"), ImageTT(lucas_lbp4, "lucas4"), ImageTT(lio_lbp1, "lio1"), ImageTT(lio_lbp2, "lio2"), ImageTT(lio_lbp3, "lio3"), ImageTT(lio_lbp4, "lio4"), ImageTT(charlot_lbp1, "charlot1"), ImageTT(charlot_lbp2, "charlot2"), ImageTT(charlot_lbp3, "charlot3"), ImageTT(charlot_lbp4, "charlot4") };
-
-	//namedWindow("LBP1", WINDOW_AUTOSIZE);// Create a window for display.
-	//imshow("LBP1", lbp1);
-	//namedWindow("LBP2", WINDOW_AUTOSIZE);// Create a window for display.
-	//imshow("LBP2", lbp2);
-
-	//intensity[0] = lbp1.at<uchar>(0, 0);
-	//intensity[1] = lbp1.at<uchar>(0, 1);
-	//intensity[2] = lbp1.at<uchar>(1, 0);
-	//intensity[3] = lbp1.at<uchar>(1, 1);
-
-	//intensity2[0] = lbp2.at<uchar>(0, 0);
-	//intensity2[1] = lbp2.at<uchar>(0, 1);
-	//intensity2[2] = lbp2.at<uchar>(1, 0);
-	//intensity2[3] = lbp2.at<uchar>(1, 1);
-
-	//vector<int> v,v2;
-
-	//v = Traitements::CreateHistograme(lbp1);
-	//v2 = Traitements::CreateHistograme(lbp2);
-
-	//InputArray array1(v);
-	//InputArray array2(v2);
-
-	// On parcours nos listes pour faire une comparaison
-	double compar_chiMin = 1000000;
-	String nameScoreMin;
-	for each (ImageTT var in images)
+	int m = 1, n = 1;
+	for each (Mat image in imagesCharlot)
 	{
-		try
+		for each (Mat imageLucas in imagesCharlot)
 		{
-			int histSize = 255;
-			float range[] = { 0, 255 };
-			const float* histRange = { range };
-			bool uniform = true;
-			bool accumulate = false;
-			cv::Mat a1_hist, a2_hist;
-
-			cv::calcHist(&var.imageMat, 1, 0, cv::Mat(), a1_hist, 1, &histSize, &histRange, uniform, accumulate);
-
-			for each (ImageTT var2 in images)
+			vector<double> score(64, 0);
+			score = ChiDeu(image, imageLucas, 8, 8);
+			double scoreTotal = 0;
+			int i = 1;
+			for each (double var in score)
 			{
-				try
-				{
-
-					cv::calcHist(&var2.imageMat, 1, 0, cv::Mat(), a2_hist, 1, &histSize, &histRange, uniform, accumulate);
-
-					double compar_chi = cv::compareHist(a1_hist, a2_hist, CV_COMP_CHISQR);
-
-					std::cout << "Comparaison entre " + var.name + " et " + var2.name + " Score : " << compar_chi << std::endl;
-
-					if (compar_chi < compar_chiMin && compar_chi > 10)
-					{
-						compar_chiMin = compar_chi;
-						nameScoreMin = var.name + " et " + var2.name;
-					}
-				}
-				catch (Exception e)
-				{
-					std::cout << e.err << std::endl;
-				}
+				//cout << std::to_string(i) + " : " + std::to_string(var) << endl;
+				scoreTotal += var;
+				i++;
+				var = 0;
 			}
-			std::cout << std::endl << "La meilleure comparaison est  entre " + nameScoreMin + " le Score est de  : " << compar_chiMin << std::endl << std::endl;
-			// RAZ
-			compar_chiMin = 1000000;
+			cout << "Score Julien " << m << " - charlot " << n << "  " << scoreTotal << endl;
+			n++;
 		}
-		catch (Exception e)
-		{
-			std::cout << e.err << std::endl;
-		}
-
-
-
-
-		//double comp = compareHist(lbp1, lbp2, CV_COMP_CHISQR);
+		m++;
+		n = 1;
 	}
-
-
-	//Mat histo;
-
-	//calcHist(&lbp1, 1, 0, Mat(), histo, 1, 255, { 0, 255 }, false, false);
-
 	waitKey(0);
 
 	/*
@@ -524,7 +547,14 @@ int main(){
 	Ptr<FaceRecognizer>  createLBPHFaceRecognizer(int radius = 1, int neighbors = 8, int grid_x = 8, int grid_y = 8, double threshold = DBL_MAX);
 	}
 	f.close();*/
+
+
+
+
+
 }
+
+
 
 #pragma endregion 
 
