@@ -13,6 +13,7 @@ public:
 	Image();
 	Image(Image&);
 	Image(Mat frame, bool convertToNdg, bool convertToNdgAndEqualizeHistogram, bool convertToLbp, bool createHistogramColor, bool createHistogramNdg, bool createHistogramLbp);
+	Image(Mat);
 	~Image();
 
 	static Mat ConvertToNdg(Mat frameColor, bool equalizeHistogram);

@@ -14,6 +14,7 @@ public:
 	static Mat HistogrammeCouleur(Mat);
 	static Mat HistogrammeNDG(Mat);
 	static Mat LBP(Mat);
+	static Mat ELBP(const Mat& src, int radius, int neighbors);
 	static vector<int> CreateHistograme(Mat);
 	static int comp(Mat a, Mat b, Mat c);
 };

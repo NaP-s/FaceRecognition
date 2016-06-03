@@ -1,4 +1,5 @@
 #include "Image.h"
+#include "Traitements.h"
 
 
 Image::Image()
@@ -29,6 +30,10 @@ Image::Image(Mat frame, bool convertToNdg = 0, bool convertToNdgAndEqualizeHisto
 	if (createHistogramColor)
 		this->_histogramColor = *(new Histogram(this->_frameCouleur));
 }
+Image::Image(Mat frameLbp)
+{
+	this->_frameLbp = frameLbp;
+}
 
 Image::~Image()
 {
@@ -38,6 +43,7 @@ Mat Image::ConvertToNdg(Mat frameColor, bool equalizeHistogram)
 {
 	Mat frameNdg;
 	cvtColor(frameColor, frameNdg, COLOR_BGR2GRAY);
+	//frameNdg.convertTo(frameNdg, CV_8U, 0.1625);
 	if (equalizeHistogram)
 		equalizeHist(frameNdg, frameNdg);
 	return (frameNdg);
@@ -50,14 +56,16 @@ Mat Image::ConvertToNdgFromNotColorImage(Mat frame, bool equalizeHistogram)
 	return (frameNdg);
 }
 
-Mat Image::ConvertToLbp(Mat frameNdg) 
+Mat Image::ConvertToLbp(Mat frameNdg)
 {
 	Mat frameLbp;
-	frameLbp = CreateLbpImage(frameNdg);
-	
+	frameLbp =  Traitements::ELBP(frameNdg,4,16);
+
 	return(frameLbp);
 }
 
+
+// TODO : Check Why dupliacet function
 Mat Image::CreateLbpImage(Mat frame) const
 {
 	Mat dst = Mat::zeros(frame.rows - 2, frame.cols - 2, CV_8UC1);
@@ -87,7 +95,7 @@ Mat Image::CreateLbpImageExtended(const Mat& src, int radius, int neighbors) {
 	// type system to define an unsigned int matrix... I am probably
 	// mistaken here, but I didn't see an unsigned int representation
 	// in OpenCV's classic typesystem...
-	Mat dst = Mat::zeros(src.rows - 2 * radius, src.cols - 2 * radius, CV_32SC1);
+	dst = Mat::zeros(src.rows - 2 * radius, src.cols - 2 * radius, CV_32SC1);
 	for (int n = 0; n<neighbors; n++) {
 		// sample points
 		float x = static_cast<float>(radius)* cos(2.0*M_PI*n / static_cast<float>(neighbors));
@@ -108,9 +116,9 @@ Mat Image::CreateLbpImageExtended(const Mat& src, int radius, int neighbors) {
 		// iterate through your data
 		for (int i = radius; i < src.rows - radius; i++) {
 			for (int j = radius; j < src.cols - radius; j++) {
-				float t = w1*src.at<_Tp>(i + fy, j + fx) + w2*src.at<_Tp>(i + fy, j + cx) + w3*src.at<_Tp>(i + cy, j + fx) + w4*src.at<_Tp>(i + cy, j + cx);
+				float t = w1*src.at<uchar>(i + fy, j + fx) + w2*src.at<uchar>(i + fy, j + cx) + w3*src.at<uchar>(i + cy, j + fx) + w4*src.at<uchar>(i + cy, j + cx);
 				// we are dealing with floating point precision, so add some little tolerance
-				dst.at<unsigned int>(i - radius, j - radius) += ((t > src.at<_Tp>(i, j)) && (abs(t - src.at<_Tp>(i, j)) > std::numeric_limits<float>::epsilon())) << n;
+				dst.at<unsigned int>(i - radius, j - radius) += ((t > src.at<uchar>(i, j)) && (abs(t - src.at<uchar>(i, j)) > std::numeric_limits<float>::epsilon())) << n;
 			}
 		}
 	}
@@ -193,6 +201,6 @@ Mat Image::PreprocessingWithTanTrigs(InputArray src, float alpha, float tau, flo
 Mat Image::resize(Mat frame, Size size)
 {
 	Mat rezized;
-	cv::resize(frame,rezized, size, 0, 0, INTER_LINEAR);
+	cv::resize(frame, rezized, size, 0, 0, INTER_LINEAR);
 	return(rezized);
 }
