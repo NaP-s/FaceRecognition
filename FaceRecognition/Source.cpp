@@ -159,7 +159,7 @@ int main(){
 
 	// On convertit en LBP nos images
 	// Julien
-	Mat julien_lbp1 = Traitements::LBP(julien1);
+	Mat julien_lbp1 = PreprocessingWithTanTrigs(julien1);
 	Mat julien_lbp2 = Traitements::LBP(julien2);
 	Mat julien_lbp3 = Traitements::LBP(julien3);
 	Mat julien_lbp4 = Traitements::LBP(julien4);
