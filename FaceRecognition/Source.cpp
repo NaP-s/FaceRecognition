@@ -34,9 +34,9 @@ Image *imagePourTraitementAvecPretraitement;
 Image *imageRef;
 
 Image *image;
+Mat image1;
 int nImage = 1;
 double h1_h2 = 0;
-Mat image1 = imread("LBP_PP1.jpg", CV_LOAD_IMAGE_GRAYSCALE);
 
 Mat ShowImageOverlay(Mat imageToDisplay)
 {
@@ -295,7 +295,6 @@ void detectAndDisplay(){
 		if (imagePourTraitementAvecPretraitement != NULL && imageRef != NULL)
 		{
 			vector<double>scores = vector<double>(64);
-			Mat imageDecale;
 			//cv::resize(imagePourTraitementAvecPretraitement->get_frameLbp(), imageDecale, Size(250, 250));
 			scores = ChiDeu(imagePourTraitementAvecPretraitement->get_frameLbp(), imageRef->get_frameLbp(), 8, 8);
 			double scoreTotal = 0;
