@@ -29,14 +29,17 @@ CascadeClassifier eyes_cascade;
 Image *imageCamera;
 Image *imageReduite;
 Image *imagePourTraitement;
-Image *imagePourTraitementAvecPretraitement;
 
-Image *imageRef;
+Image *imageRefJu;
+Image *imageRefLio;
+Image *imageRefLucas;
+Image *imageRefCharlot;
+Image *imageRefSylvain;
+Image *imageRefFlorian;
 
-Image *image;
 int nImage = 1;
-double h1_h2 = 0;
-Mat image1 = imread("LBP_PP1.jpg", CV_LOAD_IMAGE_GRAYSCALE);
+Mat imageJu, imageLio, imageLucas, imageCharlot, imageSylvain, imageFlorian;
+
 
 Mat ShowImageOverlay(Mat imageToDisplay)
 {
@@ -89,15 +92,6 @@ vector<double> ChiDeu(Mat img_VisageLBP1, Mat img_VisageLBP2, int splitX, int sp
 			CvRect ROI = cvRect(h, g, stepSize, stepSize);
 			Mat img_dest1 = img_VisageLBP1(ROI);
 			Mat img_dest2 = img_VisageLBP2(ROI);
-			/*namedWindow(std::to_string(z));
-			imshow(std::to_string(z), img_dest1);
-			*/
-
-
-			/*cv::calcHist(&img_dest1, 1, 0, cv::Mat(), a1_hist, 1, &histSize, &histRange, uniform, accumulate);
-			cv::calcHist(&img_dest2, 1, 0, cv::Mat(), a2_hist, 1, &histSize, &histRange, uniform, accumulate);*/
-
-			//score[z] = cv::compareHist(a1_hist, a2_hist, CV_COMP_CHISQR);
 
 			vector<int> hist1 = Traitements::CreateHistograme(img_dest1);
 
@@ -138,11 +132,54 @@ int main(){
 
 	try
 	{
-		image1 = imread("COL_1.jpg", CV_LOAD_IMAGE_GRAYSCALE);
-		cv::resize(image1, image1, Size(256, 256));
-		imageRef = new Image(image1,0,0,0,0,0,0);
-		imageRef->set_frameNdg(imageRef->get_frameCouleur());
-		imageRef->set_frameLbp(imageRef->ConvertToLbp(imageRef->get_frameNdg()));
+		// Chargement des images de références
+
+		//Julien
+		imageJu = imread("JZK\\crop_1.jpg", CV_LOAD_IMAGE_GRAYSCALE);
+		cv::resize(imageJu, imageJu, Size(256, 256));
+		imageRefJu = new Image(imageJu, 0, 0, 0, 0, 0, 0);
+		imageRefJu->set_frameNdg(imageRefJu->get_frameCouleur());
+		imageRefJu->set_frameLbp(imageRefJu->ConvertToLbp(imageRefJu->get_frameNdg()));
+
+
+		//Lionel
+		imageLio = imread("LVT\\crop_1.jpg", CV_LOAD_IMAGE_GRAYSCALE);
+		cv::resize(imageLio, imageLio, Size(256, 256));
+		imageRefLio = new Image(imageLio, 0, 0, 0, 0, 0, 0);
+		imageRefLio->set_frameNdg(imageRefLio->get_frameCouleur());
+		imageRefLio->set_frameLbp(imageRefLio->ConvertToLbp(imageRefLio->get_frameNdg()));
+
+
+		//Charlot
+		imageCharlot = imread("CEVT\\crop_1.jpg", CV_LOAD_IMAGE_GRAYSCALE);
+		cv::resize(imageCharlot, imageCharlot, Size(256, 256));
+		imageRefCharlot = new Image(imageCharlot, 0, 0, 0, 0, 0, 0);
+		imageRefCharlot->set_frameNdg(imageRefCharlot->get_frameCouleur());
+		imageRefCharlot->set_frameLbp(imageRefCharlot->ConvertToLbp(imageRefCharlot->get_frameNdg()));
+
+
+		//Lucas
+		imageLucas = imread("LVE\\crop_1.jpg", CV_LOAD_IMAGE_GRAYSCALE);
+		cv::resize(imageLucas, imageLucas, Size(256, 256));
+		imageRefLucas = new Image(imageLucas, 0, 0, 0, 0, 0, 0);
+		imageRefLucas->set_frameNdg(imageRefLucas->get_frameCouleur());
+		imageRefLucas->set_frameLbp(imageRefLucas->ConvertToLbp(imageRefLucas->get_frameNdg()));
+
+
+		//Sylvain
+		imageSylvain = imread("SMN\\crop_1.jpg", CV_LOAD_IMAGE_GRAYSCALE);
+		cv::resize(imageSylvain, imageSylvain, Size(256, 256));
+		imageRefSylvain = new Image(imageSylvain, 0, 0, 0, 0, 0, 0);
+		imageRefSylvain->set_frameNdg(imageRefSylvain->get_frameCouleur());
+		imageRefSylvain->set_frameLbp(imageRefSylvain->ConvertToLbp(imageRefSylvain->get_frameNdg()));
+
+
+		//Florian
+		imageFlorian = imread("FGE\\crop_1.jpg", CV_LOAD_IMAGE_GRAYSCALE);
+		cv::resize(imageFlorian, imageFlorian, Size(256, 256));
+		imageRefFlorian = new Image(imageFlorian, 0, 0, 0, 0, 0, 0);
+		imageRefFlorian->set_frameNdg(imageRefFlorian->get_frameCouleur());
+		imageRefFlorian->set_frameLbp(imageRefFlorian->ConvertToLbp(imageRefFlorian->get_frameNdg()));
 	}
 	catch (Exception e)
 	{
@@ -180,9 +217,6 @@ int main(){
 				try
 				{
 					detectAndDisplay();
-
-					//comparaison();
-
 				}
 				catch (exception e)
 				{
@@ -201,9 +235,9 @@ int main(){
 				break;
 			}
 			if (char(c) == 's') {
-				if (imagePourTraitementAvecPretraitement != nullptr)
+				if (imagePourTraitement != nullptr)
 				{
-					imwrite("COL_" + std::to_string(nImage) + ".jpg", imagePourTraitementAvecPretraitement->get_frameCouleur());
+					imwrite("COL_" + std::to_string(nImage) + ".jpg", imagePourTraitement->get_frameCouleur());
 					nImage++;
 				}
 			}
@@ -223,6 +257,7 @@ int main(){
 /// <para>frame : Image d'entrée envoyé par la webcam</para>
 /// </summary>
 void detectAndDisplay(){
+	imagePourTraitement = NULL;
 	// Vecteurs de rectangle => Chaque rectangle correspond à l'emplacement d'un visage / yeux
 	std::vector<Rect> faces;
 	std::vector<Rect> eyes;
@@ -273,18 +308,7 @@ void detectAndDisplay(){
 			}
 
 			// On crée notre / nos images LBP
-			//imagePourTraitementAvecPretraitement = new Image(imagePourTraitement->get_frameCouleur(), 1, 0, 0, 0, 0, 0);
-			imagePourTraitementAvecPretraitement = new Image(Image::resize(imageReduite->get_frameCouleur()(roi_c), Size(256, 256)), 1,1, 1, 0, 0, 0);
-			//imagePourTraitementAvecPretraitement->set_frameNdg(imagePourTraitementAvecPretraitement->Normalize(imagePourTraitementAvecPretraitement->PreprocessingWithTanTrigs(imagePourTraitementAvecPretraitement->get_frameNdg())));
-			//imagePourTraitementAvecPretraitement->set_frameNdg(imagePourTraitementAvecPretraitement->Normalize(imagePourTraitementAvecPretraitement->get_frameNdg()));
-
-			//imagePourTraitementAvecPretraitement->set_frameLbp(imagePourTraitementAvecPretraitement->CreateLbpImage(imagePourTraitementAvecPretraitement->Normalize(imagePourTraitementAvecPretraitement->PreprocessingWithTanTrigs(imagePourTraitementAvecPretraitement->get_frameNdg()))));
-			
-			//imagePourTraitementAvecPretraitement->set_frameLbp(imagePourTraitementAvecPretraitement->CreateLbpImage(imagePourTraitementAvecPretraitement->Normalize(imagePourTraitementAvecPretraitement->get_frameNdg())));
-
-			// On trace notre histogramme depuis notre image LBP
-			//imagePourTraitementAvecPretraitement->set_histogramLbp(*new Histogram(imagePourTraitementAvecPretraitement->get_frameLbp()));
-
+			imagePourTraitement = new Image(Image::resize(imageReduite->get_frameCouleur()(roi_c), Size(256, 256)), 1, 1, 1, 0, 0, 0);
 		}
 
 		// Dessin du visage détecté sur l'image principale
@@ -292,53 +316,109 @@ void detectAndDisplay(){
 		Point pt2((faces[ic].x + faces[ic].height), (faces[ic].y + faces[ic].width));
 		// ReSharper disable once CppMsExtBindingRValueToLvalueReference
 		rectangle(imageCamera->get_frameCouleur(), pt1, pt2, Scalar(0, 255, 0), 1, 8, 0);
-		if (imagePourTraitementAvecPretraitement != NULL && imageRef != NULL)
+		if (imagePourTraitement != NULL && imageRefJu != NULL && imageRefLio != NULL && imageRefCharlot != NULL && imageRefLucas != NULL && imageRefSylvain != NULL && imageRefFlorian != NULL)
 		{
-			vector<double>scores = vector<double>(64);
-			Mat imageDecale;
-			//cv::resize(imagePourTraitementAvecPretraitement->get_frameLbp(), imageDecale, Size(250, 250));
-			scores = ChiDeu(imagePourTraitementAvecPretraitement->get_frameLbp(), imageRef->get_frameLbp(), 8, 8);
-			double scoreTotal = 0;
-			for each (double score  in scores)
+			// Vecteurs de résultat
+			vector<double>scoresJulien = vector<double>(64);
+			vector<double>scoresLio = vector<double>(64);
+			vector<double>scoresLucas = vector<double>(64);
+			vector<double>scoresCharlot = vector<double>(64);
+			vector<double>scoresSylvain = vector<double>(64);
+			vector<double>scoresFlorian = vector<double>(64);
+
+			String name;
+			// Calcul des scores pour chaques image de référence
+
+			// Julien
+			scoresJulien = ChiDeu(imagePourTraitement->get_frameLbp(), imageRefJu->get_frameLbp(), 8, 8);
+			double scoreTotalJulien = 0;
+			for each (double score  in scoresJulien)
 			{
-				scoreTotal += score;
+				scoreTotalJulien += score;
 			}
-			// ReSharper disable CppMsExtBindingRValueToLvalueReference
-			putText(imageCamera->get_frameCouleur(), "Visage Detecte ici : Score " + std::to_string(scoreTotal), cvPoint((faces[ic].x + faces[ic].width / 4), faces[ic].y - 10), FONT_HERSHEY_COMPLEX_SMALL, 0.8, cvScalar(0, 0, 255), 1, CV_AA);
-		}
 
-		// Affichage des differentes images
-		imshow("WebCam", imageCamera->get_frameCouleur());
-		imshow("WebCamNdg", imageCamera->get_frameNdg());
-		cvMoveWindow("WebCam", 0, 0);
-		if (imagePourTraitementAvecPretraitement != NULL)
-		{
-			//imshow("imageLBP", imagePourTraitement->get_frameLbp());
-			imshow("imageLBPAvecPretraitement", ShowImageOverlay(imagePourTraitementAvecPretraitement->get_frameLbp()));
-			//imshow("imageNDG_PourTraitement", imagePourTraitement->get_frameNdg());
-			imshow("imageNDG_PourTraitementAvecPretraitement", ShowImageOverlay(imagePourTraitementAvecPretraitement->get_frameNdg()));
-			//imshow("imageHistogrammeLBP", imagePourTraitement->get_frameHistogramLbp().get_graphHistogram());
-			//imshow("imageHistogrammeLBPAvecPretraitement", imagePourTraitementAvecPretraitement->get_frameHistogramLbp().get_graphHistogram());
-			//cvMoveWindow("imageLBP", 800, 0);
-			//cvMoveWindow("imageNDG_PourTraitement", 1100, 0);
-			//cvMoveWindow("imageHistogrammeLBP", 1400, 0);
-			cvMoveWindow("imageLBPAvecPretraitement", 800, 500);
-			cvMoveWindow("imageNDG_PourTraitementAvecPretraitement", 1100, 500);
-			cvMoveWindow("imageHistogrammeLBPAvecPretraitement", 1400, 500);
-			if (imageRef != NULL)
-				imshow("imageRef", imageRef->get_frameLbp());
-			cvMoveWindow("imageRef", 0, 600);
+			// Lucas
+			scoresLucas = ChiDeu(imagePourTraitement->get_frameLbp(), imageRefLucas->get_frameLbp(), 8, 8);
+			double scoreTotalLucas = 0;
+			for each (double score  in scoresLucas)
+			{
+				scoreTotalLucas += score;
+			}
 
-		}
-		else{
-			//destroyWindow("imageLBP");
-			destroyWindow("imageLBPAvecPretraitement");
-			//destroyWindow("imageNDG_PourTraitement");
-			destroyWindow("imageNDG_PourTraitementAvecPretraitement");
-			//destroyWindow("imageHistogrammeLBP");
-			//destroyWindow("imageHistogrammeLBPAvecPretraitement");
+			// Lio
+			scoresLio = ChiDeu(imagePourTraitement->get_frameLbp(), imageRefLio->get_frameLbp(), 8, 8);
+			double scoreTotalLio = 0;
+			for each (double score  in scoresLio)
+			{
+				scoreTotalLio += score;
+			}
+
+			// Charlot
+			scoresCharlot = ChiDeu(imagePourTraitement->get_frameLbp(), imageRefCharlot->get_frameLbp(), 8, 8);
+			double scoreTotalCharlot = 0;
+			for each (double score  in scoresCharlot)
+			{
+				scoreTotalCharlot += score;
+			}
+
+			// Sylvain
+			scoresSylvain = ChiDeu(imagePourTraitement->get_frameLbp(), imageRefSylvain->get_frameLbp(), 8, 8);
+			double scoreTotalSylvain = 0;
+			for each (double score  in scoresSylvain)
+			{
+				scoreTotalSylvain += score;
+			}
+
+			// Florian
+			scoresFlorian = ChiDeu(imagePourTraitement->get_frameLbp(), imageRefFlorian->get_frameLbp(), 8, 8);
+			double scoreTotalFlorian = 0;
+			for each (double score  in scoresFlorian)
+			{
+				scoreTotalFlorian += score;
+			}
+
+			if (scoreTotalJulien < scoreTotalCharlot && scoreTotalJulien < scoreTotalFlorian && scoreTotalJulien < scoreTotalLio && scoreTotalJulien < scoreTotalSylvain && scoreTotalJulien < scoreTotalLucas)
+				name = "Julien";
+
+			if (scoreTotalLio < scoreTotalCharlot && scoreTotalLio < scoreTotalFlorian && scoreTotalLio < scoreTotalJulien && scoreTotalLio < scoreTotalSylvain && scoreTotalLio < scoreTotalLucas)
+				name = "Lio";
+
+			if (scoreTotalLucas < scoreTotalCharlot && scoreTotalLucas < scoreTotalFlorian && scoreTotalLucas < scoreTotalLio && scoreTotalLucas < scoreTotalSylvain && scoreTotalLucas < scoreTotalJulien)
+				name = "Lucas";
+
+			if (scoreTotalCharlot < scoreTotalJulien && scoreTotalCharlot < scoreTotalFlorian && scoreTotalCharlot < scoreTotalLio && scoreTotalCharlot < scoreTotalSylvain && scoreTotalCharlot < scoreTotalLucas)
+				name = "Charlot";
+
+			if (scoreTotalSylvain < scoreTotalCharlot && scoreTotalSylvain < scoreTotalFlorian && scoreTotalSylvain < scoreTotalLio && scoreTotalSylvain < scoreTotalJulien && scoreTotalSylvain < scoreTotalLucas)
+				name = "Sylvain";
+
+			if (scoreTotalFlorian < scoreTotalCharlot && scoreTotalFlorian < scoreTotalJulien && scoreTotalFlorian < scoreTotalLio && scoreTotalFlorian < scoreTotalSylvain && scoreTotalFlorian < scoreTotalLucas)
+				name = "Florian";
+
+
+
+			putText(imageCamera->get_frameCouleur(), name, cvPoint((faces[ic].x + faces[ic].width / 4), faces[ic].y - 10), FONT_HERSHEY_COMPLEX_SMALL, 0.8, cvScalar(0, 0, 255), 1, CV_AA);
 		}
 	}
+	// Affichage des differentes images
+	imshow("WebCam", imageCamera->get_frameCouleur());
+	imshow("WebCamNdg", imageCamera->get_frameNdg());
+	cvMoveWindow("WebCam", 0, 0);
+	cvMoveWindow("WebCam", 1000, 0);
+	if (imagePourTraitement != NULL)
+	{
+		imshow("imageLBP", ShowImageOverlay(imagePourTraitement->get_frameLbp()));
+		imshow("imageNDG", ShowImageOverlay(imagePourTraitement->get_frameNdg()));
+		cvMoveWindow("imageLBP", 800, 500);
+		cvMoveWindow("imageNDG", 1100, 500);
+
+		cvMoveWindow("imageRef", 0, 600);
+
+	}
+	else{
+		destroyWindow("imageLBP");
+		destroyWindow("imageNDG");
+	}
+}
 #pragma endregion
 
-}
