@@ -44,8 +44,8 @@ Mat Image::ConvertToNdg(Mat frameColor, bool equalizeHistogram)
 	Mat frameNdg;
 	cvtColor(frameColor, frameNdg, COLOR_BGR2GRAY);
 	//frameNdg.convertTo(frameNdg, CV_8U, 0.1625);
-	if (equalizeHistogram)
-		equalizeHist(frameNdg, frameNdg);
+	//if (equalizeHistogram)
+	//	equalizeHist(frameNdg, frameNdg);
 	return (frameNdg);
 }
 
