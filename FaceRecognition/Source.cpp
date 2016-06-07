@@ -57,6 +57,8 @@ Mat ShowImageOverlay(Mat imageToDisplay)
 
 vector<double> ChiDeu(Mat img_VisageLBP1, Mat img_VisageLBP2, int splitX, int splitY)
 {
+	img_VisageLBP1.convertTo(img_VisageLBP1, CV_8UC1);
+	img_VisageLBP2.convertTo(img_VisageLBP2, CV_8UC1);
 	vector<double> score(64, 0);
 	vector<int> mapPonderation{ 0, 0, 0, 0, 0, 0, 0, 0, 2, 4, 4, 1, 1, 4, 4, 2, 1, 1, 1, 0, 0, 1, 1, 1, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 1, 2, 2, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 2, 2, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0 };
 	int Nbcomp = splitY*splitX;
@@ -123,7 +125,6 @@ vector<double> ChiDeu(Mat img_VisageLBP1, Mat img_VisageLBP2, int splitX, int sp
 
 
 #pragma region Fonction main : On lance nos Threads
-void comparaison();
 
 int main(){
 
@@ -137,8 +138,11 @@ int main(){
 
 	try
 	{
-		cv::resize(image1, image1, Size(254, 254));
-		imageRef = new Image(image1);
+		image1 = imread("COL_1.jpg", CV_LOAD_IMAGE_GRAYSCALE);
+		cv::resize(image1, image1, Size(256, 256));
+		imageRef = new Image(image1,0,0,0,0,0,0);
+		imageRef->set_frameNdg(imageRef->get_frameCouleur());
+		imageRef->set_frameLbp(imageRef->ConvertToLbp(imageRef->get_frameNdg()));
 	}
 	catch (Exception e)
 	{
@@ -199,7 +203,7 @@ int main(){
 			if (char(c) == 's') {
 				if (imagePourTraitementAvecPretraitement != nullptr)
 				{
-					imwrite("LBP_PP" + std::to_string(nImage) + ".jpg", imagePourTraitementAvecPretraitement->get_frameLbp());
+					imwrite("COL_" + std::to_string(nImage) + ".jpg", imagePourTraitementAvecPretraitement->get_frameCouleur());
 					nImage++;
 				}
 			}
@@ -267,20 +271,19 @@ void detectAndDisplay(){
 				roi_c.width = (eyes[0].x + 65) - roi_c.x;
 				roi_c.height = 190;
 			}
-			//imagePourTraitement = new Image(Image::resize(imageReduite->get_frameCouleur()(roi_c), Size(256, 256)), 1, 0, 1, 0, 0, 1);
 
 			// On crée notre / nos images LBP
 			//imagePourTraitementAvecPretraitement = new Image(imagePourTraitement->get_frameCouleur(), 1, 0, 0, 0, 0, 0);
-			imagePourTraitementAvecPretraitement = new Image(Image::resize(imageReduite->get_frameCouleur()(roi_c), Size(256, 256)), 1, 0, 0, 0, 0, 0);
+			imagePourTraitementAvecPretraitement = new Image(Image::resize(imageReduite->get_frameCouleur()(roi_c), Size(256, 256)), 1,1, 1, 0, 0, 0);
 			//imagePourTraitementAvecPretraitement->set_frameNdg(imagePourTraitementAvecPretraitement->Normalize(imagePourTraitementAvecPretraitement->PreprocessingWithTanTrigs(imagePourTraitementAvecPretraitement->get_frameNdg())));
-			imagePourTraitementAvecPretraitement->set_frameNdg(imagePourTraitementAvecPretraitement->Normalize(imagePourTraitementAvecPretraitement->get_frameNdg()));
+			//imagePourTraitementAvecPretraitement->set_frameNdg(imagePourTraitementAvecPretraitement->Normalize(imagePourTraitementAvecPretraitement->get_frameNdg()));
 
 			//imagePourTraitementAvecPretraitement->set_frameLbp(imagePourTraitementAvecPretraitement->CreateLbpImage(imagePourTraitementAvecPretraitement->Normalize(imagePourTraitementAvecPretraitement->PreprocessingWithTanTrigs(imagePourTraitementAvecPretraitement->get_frameNdg()))));
 			
-			imagePourTraitementAvecPretraitement->set_frameLbp(imagePourTraitementAvecPretraitement->CreateLbpImage(imagePourTraitementAvecPretraitement->Normalize(imagePourTraitementAvecPretraitement->get_frameNdg())));
+			//imagePourTraitementAvecPretraitement->set_frameLbp(imagePourTraitementAvecPretraitement->CreateLbpImage(imagePourTraitementAvecPretraitement->Normalize(imagePourTraitementAvecPretraitement->get_frameNdg())));
 
 			// On trace notre histogramme depuis notre image LBP
-			imagePourTraitementAvecPretraitement->set_histogramLbp(*new Histogram(imagePourTraitementAvecPretraitement->get_frameLbp()));
+			//imagePourTraitementAvecPretraitement->set_histogramLbp(*new Histogram(imagePourTraitementAvecPretraitement->get_frameLbp()));
 
 		}
 
@@ -315,7 +318,7 @@ void detectAndDisplay(){
 			//imshow("imageNDG_PourTraitement", imagePourTraitement->get_frameNdg());
 			imshow("imageNDG_PourTraitementAvecPretraitement", ShowImageOverlay(imagePourTraitementAvecPretraitement->get_frameNdg()));
 			//imshow("imageHistogrammeLBP", imagePourTraitement->get_frameHistogramLbp().get_graphHistogram());
-			imshow("imageHistogrammeLBPAvecPretraitement", imagePourTraitementAvecPretraitement->get_frameHistogramLbp().get_graphHistogram());
+			//imshow("imageHistogrammeLBPAvecPretraitement", imagePourTraitementAvecPretraitement->get_frameHistogramLbp().get_graphHistogram());
 			//cvMoveWindow("imageLBP", 800, 0);
 			//cvMoveWindow("imageNDG_PourTraitement", 1100, 0);
 			//cvMoveWindow("imageHistogrammeLBP", 1400, 0);
@@ -333,133 +336,9 @@ void detectAndDisplay(){
 			//destroyWindow("imageNDG_PourTraitement");
 			destroyWindow("imageNDG_PourTraitementAvecPretraitement");
 			//destroyWindow("imageHistogrammeLBP");
-			destroyWindow("imageHistogrammeLBPAvecPretraitement");
+			//destroyWindow("imageHistogrammeLBPAvecPretraitement");
 		}
 	}
 #pragma endregion
-
-
-	//#pragma region Comparaison
-	//void comparaison()
-	//{
-	//	//Image image = Image(image1, 1, 1, 1, 0, 0, 1);
-	//	////Image image1 = Image(image21, 1, 1, 1, 0, 0, 1);
-	//	//Mat imageMat;
-	//	//stringstream text1, text2, text3, fichier;
-	//	//int val = 0;
-	//	//int i = 0;
-	//	//int j = 0;
-	//	//int histSize = 256;
-	//	//float range[] = { 0, 256 };
-	//	//const float* histRange = { range };
-	//	//bool uniform = true; bool accumulate = true;
-	//	//uchar intensity = 0;
-	//	//unsigned char *input = reinterpret_cast<unsigned char*>(&image.get_frameLbp());
-	//
-	//
-	//	//imshow("Image", image.get_frameNdg());
-	//	//imshow("ImageLbp", image.get_frameLbp());
-	//	//imshow("ImageHisto", image.get_frameHistogramLbp().get_graphHistogram());
-	//
-	//	///*imshow("Image1", image1.get_frameNdg());
-	//	//imshow("ImageLbp1", image1.get_frameLbp());
-	//	//imshow("ImageHisto1", image1.get_frameHistogramLbp().get_graphHistogram());*/
-	//	//Mat HistoJu1;
-	//	//Mat HistoLu1;
-	//
-	//	//calcHist(&image.get_frameLbp(), 1, 0, Mat(), HistoJu1, 1, &histSize, &histRange, uniform, accumulate);
-	//	////calcHist(&image1.get_frameLbp(), 1, 0, Mat(), HistoLu1, 1, &histSize, &histRange, uniform, accumulate);
-	//
-	//	//double lu1_lu2 = compareHist(HistoLu1, HistoJu1, CV_COMP_CHISQR);
-	//
-	//	//imageMat = image.get_frameLbp();
-	//
-	//	//fichier << "Histo.txt";
-	//	//ofstream f(fichier.str().c_str());
-	//
-	//	//if (!f.is_open())
-	//	//	std::cout << "Impossible d'ouvrir le fichier en ecriture !" << std::endl;
-	//	//else
-	//	//{
-	//	//	int Histo[256] = { 0 };
-	//
-	//	//	i = 0;
-	//	//	j = 0;
-	//
-	//	//	for (i = 0; i < imageMat.rows; i++)
-	//	//		for (j = 0; j < imageMat.cols; j++)
-	//	//		{
-	//	//			intensity = imageMat.at<uchar>(i, j);
-	//	//			Histo[intensity]++;
-	//	//		}
-	//	//	for (int k = 0; k < 256; k++)
-	//	//	{
-	//	//		f << Histo[k] << " ";
-	//
-	//	//	}
-	//	//	f << endl;
-	//
-	//	//	Mat HistoJu1;
-	//	//	Mat HistoJu2;
-	//	//	Mat HistoJu3;
-	//	//	Mat HistoJu4;
-	//
-	//	//	Mat HistoLu1;
-	//	//	Mat HistoLu2;
-	//	//	Mat HistoLu3;
-	//	//	Mat HistoLu4;
-	//
-	//	//	Mat imageJu1 = imread("Julien/LBP_PP19.jpg", CV_LOAD_IMAGE_GRAYSCALE);
-	//	//	Mat imageJu2 = imread("Julien/LBP_PP20.jpg", CV_LOAD_IMAGE_GRAYSCALE);
-	//	//	Mat imageJu3 = imread("Julien/LBP_PP21.jpg", CV_LOAD_IMAGE_GRAYSCALE);
-	//	//	Mat imageJu4 = imread("Julien/LBP_PP22.jpg", CV_LOAD_IMAGE_GRAYSCALE);
-	//
-	//
-	//	//	Mat imageLu1 = imread("Lucas/LBP_PP1.jpg", CV_LOAD_IMAGE_GRAYSCALE);
-	//	//	Mat imageLu2 = imread("Lucas/LBP_PP2.jpg", CV_LOAD_IMAGE_GRAYSCALE);
-	//	//	Mat imageLu3 = imread("Lucas/LBP_PP3.jpg", CV_LOAD_IMAGE_GRAYSCALE);
-	//	//	Mat imageLu4 = imread("Lucas/LBP_PP4.jpg", CV_LOAD_IMAGE_GRAYSCALE);
-	//
-	//	//	int histSize = 256;
-	//	//	float range[] = { 0, 256 };
-	//	//	const float* histRange = { range };
-	//	//	bool uniform = true; bool accumulate = true;
-	//
-	//	//	calcHist(&imageJu1, 1, 0, Mat(), HistoJu1, 1, &histSize, &histRange, uniform, accumulate);
-	//	//	calcHist(&imageJu2, 1, 0, Mat(), HistoJu2, 1, &histSize, &histRange, uniform, accumulate);
-	//	//	calcHist(&imageJu3, 1, 0, Mat(), HistoJu3, 1, &histSize, &histRange, uniform, accumulate);
-	//	//	calcHist(&imageJu4, 1, 0, Mat(), HistoJu4, 1, &histSize, &histRange, uniform, accumulate);
-	//
-	//	//	calcHist(&imageLu1, 1, 0, Mat(), HistoLu1, 1, &histSize, &histRange, uniform, accumulate);
-	//	//	calcHist(&imageLu2, 1, 0, Mat(), HistoLu2, 1, &histSize, &histRange, uniform, accumulate);
-	//	//	calcHist(&imageLu3, 1, 0, Mat(), HistoLu3, 1, &histSize, &histRange, uniform, accumulate);
-	//	//	calcHist(&imageLu4, 1, 0, Mat(), HistoLu4, 1, &histSize, &histRange, uniform, accumulate);
-	//
-	//	//	imshow("LBP_PP1_JU", imageJu1);
-	//	//	imshow("LBP_PP2_JU", imageJu2);
-	//	//	imshow("LBP_PP3JU", imageJu3);
-	//	//	imshow("LBP_PP4_JU", imageJu4);
-	//	//	imshow("LBP_PP1_LU", imageLu1);
-	//	//	imshow("LBP_PP2_LU", imageLu2);
-	//	//	imshow("LBP_PP3_LU", imageLu3);
-	//	//	imshow("LBP_PP4_LU", imageLu4);
-	//
-	//	//	double lu1_lu2 = compareHist(HistoLu1, HistoLu2, CV_COMP_CHISQR);
-	//	//	double ju1_lu1 = compareHist(HistoJu1, HistoLu1, CV_COMP_CHISQR);
-	//	//	double ju2_lu2 = compareHist(HistoJu2, HistoLu2, CV_COMP_CHISQR);
-	//
-	//	//	Ptr<FaceRecognizer>  createLBPHFaceRecognizer(int radius = 1, int neighbors = 8, int grid_x = 8, int grid_y = 8, double threshold = DBL_MAX);
-	//	//}
-	//	//f.close(); 
-	//
-	//
-	//
-	//
-	//
-	//}
-	//
-	//
-	//
-	//#pragma endregion 
 
 }
