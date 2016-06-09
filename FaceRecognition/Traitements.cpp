@@ -165,7 +165,7 @@ vector<int> Traitements::CreateHistograme(Mat image)
 }
 
 
-Mat Traitements::PreprocessingWithTanTrigs(InputArray src, float alpha, float tau, float gamma, int sigma0, int sigma1)
+Mat Traitements::PreprocessingWithTanTrigs(InputArray src, float alpha, float tau, float gamma, int sigma0, int sigma1) 
 {
 
 	// Convert to floating point:
