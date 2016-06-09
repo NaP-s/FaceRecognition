@@ -43,7 +43,6 @@ Mat Image::ConvertToNdg(Mat frameColor, bool equalizeHistogram)
 {
 	Mat frameNdg;
 	cvtColor(frameColor, frameNdg, COLOR_BGR2GRAY);
-	//frameNdg = Traitements::PreprocessingWithTanTrigs(frameNdg);
 	if (equalizeHistogram)
 		equalizeHist(frameNdg, frameNdg);
 	return (frameNdg);

@@ -3,14 +3,19 @@
 #include "opencv2/objdetect/objdetect.hpp"
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
-#include <stdio.h>
+#include <stdio.h> 
+#include <string.h> 
+#include <stdlib.h> 
 #include "Traitements.h"
-#include"Image.h"
-
+#include "Image.h"
 #include <fstream>
 #include <iomanip>
 #include <chrono>
 #include <thread>
+#include <Windows.h>
+
+
+
 
 // Déclaration des namespace
 using namespace std;
@@ -39,6 +44,12 @@ Image *imageRefFlorian;
 
 int nImage = 1;
 Mat imageJu, imageLio, imageLucas, imageCharlot, imageSylvain, imageFlorian;
+
+String detectedPerson_Name;
+String detectedPerson_Surname;
+String detectedPerson_Age;
+String detectedPerson_Birthhdate;
+String detectedPerson_Company;
 
 
 Mat ShowImageOverlay(Mat imageToDisplay)
@@ -132,8 +143,7 @@ int main(){
 
 	try
 	{
-		// Chargement des images de références
-
+		
 		//Julien
 		imageJu = imread("JZK\\crop_1.jpg", CV_LOAD_IMAGE_GRAYSCALE);
 		cv::resize(imageJu, imageJu, Size(256, 256));
@@ -326,7 +336,7 @@ void detectAndDisplay(){
 			vector<double>scoresSylvain = vector<double>(64);
 			vector<double>scoresFlorian = vector<double>(64);
 
-			String name;
+
 			// Calcul des scores pour chaques image de référence
 
 			// Julien
@@ -378,26 +388,64 @@ void detectAndDisplay(){
 			}
 
 			if (scoreTotalJulien < scoreTotalCharlot && scoreTotalJulien < scoreTotalFlorian && scoreTotalJulien < scoreTotalLio && scoreTotalJulien < scoreTotalSylvain && scoreTotalJulien < scoreTotalLucas)
-				name = "Julien";
+			{
+				detectedPerson_Name = "ZARNIAK";
+				detectedPerson_Surname = "Julien";
+				detectedPerson_Birthhdate = "27 juillet";
+				detectedPerson_Age = "23 ans";
+				detectedPerson_Company = "ACTEMIUM";
+			}
 
 			if (scoreTotalLio < scoreTotalCharlot && scoreTotalLio < scoreTotalFlorian && scoreTotalLio < scoreTotalJulien && scoreTotalLio < scoreTotalSylvain && scoreTotalLio < scoreTotalLucas)
-				name = "Lio";
+			{
+				detectedPerson_Name = "VEROT";
+				detectedPerson_Surname = "Lionel";
+				detectedPerson_Birthhdate = "17 aout";
+				detectedPerson_Age = "23 ans";
+				detectedPerson_Company = "VALEO";
+			}
 
 			if (scoreTotalLucas < scoreTotalCharlot && scoreTotalLucas < scoreTotalFlorian && scoreTotalLucas < scoreTotalLio && scoreTotalLucas < scoreTotalSylvain && scoreTotalLucas < scoreTotalJulien)
-				name = "Lucas";
+			{
+				detectedPerson_Name = "VOLAINE";
+				detectedPerson_Surname = "Lucas";
+				detectedPerson_Birthhdate = "08 février";
+				detectedPerson_Age = "26 ans";
+				detectedPerson_Company = "AREVA";
+			}
+
 
 			if (scoreTotalCharlot < scoreTotalJulien && scoreTotalCharlot < scoreTotalFlorian && scoreTotalCharlot < scoreTotalLio && scoreTotalCharlot < scoreTotalSylvain && scoreTotalCharlot < scoreTotalLucas)
-				name = "Charlot";
+			{
+				detectedPerson_Name = "VLIMANT";
+				detectedPerson_Surname = "Charles Etienne";
+				detectedPerson_Birthhdate = "18 mars";
+				detectedPerson_Age = "25 ans";
+				detectedPerson_Company = "THALES";
+			}
+
 
 			if (scoreTotalSylvain < scoreTotalCharlot && scoreTotalSylvain < scoreTotalFlorian && scoreTotalSylvain < scoreTotalLio && scoreTotalSylvain < scoreTotalJulien && scoreTotalSylvain < scoreTotalLucas)
-				name = "Sylvain";
+			{
+				detectedPerson_Name = "MARTIN";
+				detectedPerson_Surname = "Sylvain";
+				detectedPerson_Birthhdate = "21 novembre";
+				detectedPerson_Age = "23 ans";
+				detectedPerson_Company = "Tri qualite service";
+			}
+
 
 			if (scoreTotalFlorian < scoreTotalCharlot && scoreTotalFlorian < scoreTotalJulien && scoreTotalFlorian < scoreTotalLio && scoreTotalFlorian < scoreTotalSylvain && scoreTotalFlorian < scoreTotalLucas)
-				name = "Florian";
 
+			{
+				detectedPerson_Name = "GIRE";
+				detectedPerson_Surname = "Florian";
+				detectedPerson_Birthhdate = "24 mars";
+				detectedPerson_Age = "23 ans";
+				detectedPerson_Company = "SCHNEIDER";
+			}
 
-
-			putText(imageCamera->get_frameCouleur(), name, cvPoint((faces[ic].x + faces[ic].width / 4), faces[ic].y - 10), FONT_HERSHEY_COMPLEX_SMALL, 0.8, cvScalar(0, 0, 255), 1, CV_AA);
+			putText(imageCamera->get_frameCouleur(), detectedPerson_Surname, cvPoint((faces[ic].x + faces[ic].width / 4), faces[ic].y - 10), FONT_HERSHEY_COMPLEX_SMALL, 0.8, cvScalar(0, 0, 255), 1, CV_AA);
 		}
 	}
 	// Affichage des differentes images
@@ -421,4 +469,6 @@ void detectAndDisplay(){
 	}
 }
 #pragma endregion
+
+
 
