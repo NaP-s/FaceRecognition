@@ -59,8 +59,8 @@ Mat Image::ConvertToNdgFromNotColorImage(Mat frame, bool equalizeHistogram)
 Mat Image::ConvertToLbp(Mat frameNdg)
 {
 	Mat frameLbp;
-	frameLbp =  Traitements::PreprocessingWithTanTrigs(frameNdg);
-	//frameLbp = Traitements::LBP(frameNdg);
+	//frameLbp =  Traitements::PreprocessingWithTanTrigs(frameNdg);
+	frameLbp = Traitements::LBP(frameNdg);
 
 	return(frameLbp);
 }
