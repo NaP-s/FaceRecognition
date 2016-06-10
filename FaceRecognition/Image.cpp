@@ -44,7 +44,11 @@ Mat Image::ConvertToNdg(Mat frameColor, bool equalizeHistogram)
 	Mat frameNdg;
 	cvtColor(frameColor, frameNdg, COLOR_BGR2GRAY);
 	if (equalizeHistogram)
-		equalizeHist(frameNdg, frameNdg);
+	{
+		GaussianBlur(frameNdg, frameNdg, Size(1, 1), 0, 0);
+		//equalizeHist(frameNdg, frameNdg);
+		//normalize(frameNdg, frameNdg, 0, 255, NORM_MINMAX, CV_8UC1);
+	}
 	return (frameNdg);
 }
 
@@ -58,7 +62,7 @@ Mat Image::ConvertToNdgFromNotColorImage(Mat frame, bool equalizeHistogram)
 Mat Image::ConvertToLbp(Mat frameNdg)
 {
 	Mat frameLbp;
-	//frameLbp =  Traitements::ELBP(frameNdg,1,8);
+	//frameLbp =  Traitements::ELBP(frameNdg,1,4);
 	frameLbp = Traitements::LBP(frameNdg);
 
 	return(frameLbp);

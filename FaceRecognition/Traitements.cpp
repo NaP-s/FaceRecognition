@@ -149,7 +149,7 @@ Mat Traitements::ELBP(const Mat& src, int radius, int neighbors) {
 }
 
 
-vector<int> Traitements::CreateHistograme(Mat image)
+vector<int> Traitements::CreateHistograme(Mat image, bool isCumulated)
 {
 	std::vector<int> vector1(256, 0);
 	int with = image.size().width;
@@ -161,6 +161,17 @@ vector<int> Traitements::CreateHistograme(Mat image)
 			temp = image.at<uchar>(i, j);
 			vector1.at(image.at<uchar>(i, j)) += 1;
 		}
+
+	if (isCumulated)
+	{
+		int temp = 0;
+		for each (int val in vector1)
+		{
+			val += temp;
+			temp = val;
+		}
+
+	}
 	return vector1;
 }
 

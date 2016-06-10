@@ -24,6 +24,7 @@ using namespace cv;
 // Function Headers
 void detectAndDisplay();
 Mat ShowImageOverlay(Mat imageToDisplay);
+Mat ShowImagePonderation(Mat imageToDisplay);
 
 // Global variables
 String face_cascade_name = "haarcascade_frontalface_alt.xml";
@@ -41,9 +42,11 @@ Image *imageRefLucas;
 Image *imageRefCharlot;
 Image *imageRefSylvain;
 Image *imageRefFlorian;
+Image *imageRefMartin;
+Image *imageRefGregoire;
 
 int nImage = 1;
-Mat imageJu, imageLio, imageLucas, imageCharlot, imageSylvain, imageFlorian;
+Mat imageJu, imageLio, imageLucas, imageCharlot, imageSylvain, imageFlorian, imageMartin, imageGregoire;
 
 String detectedPerson_Name;
 String detectedPerson_Surname;
@@ -54,6 +57,7 @@ String detectedPerson_Company;
 
 Mat ShowImageOverlay(Mat imageToDisplay)
 {
+
 	Mat mat_img(imageToDisplay);
 	int stepSize = mat_img.rows / 8;
 
@@ -68,13 +72,87 @@ Mat ShowImageOverlay(Mat imageToDisplay)
 	return mat_img;
 }
 
+Mat ShowImagePonderation(Mat imageToDisplay)
+{
+	vector<int> mapPonderation
+	{
+		0, 1, 1, 0, 0, 1, 1, 0,
+		2, 4, 4, 1, 1, 4, 4, 2,
+		1, 3, 3, 0, 0, 3, 3, 1,
+		0, 1, 1, 1, 1, 1, 1, 0,
+		0, 0, 1, 2, 2, 1, 0, 0,
+		0, 1, 2, 3, 3, 2, 1, 0,
+		0, 1, 2, 3, 3, 2, 1, 0,
+		0, 0, 0, 1, 1, 0, 0, 0
+	};
+	Mat mat_img(imageToDisplay);
+	int stepSize = mat_img.rows / 8;
+
+	int width = mat_img.size().width;
+	int height = mat_img.size().height;
+	int z = 0;
+
+	//initialisation du tableau de scores (16 valeurs)
+
+	for (int h = stepSize; h <= height; h += stepSize)
+	{
+
+		for (int g = stepSize; g  <= width; g += stepSize)
+
+		{
+			switch (mapPonderation[z])
+			{
+			case 0:
+				for (int i = h - stepSize; i < h; i += 1)
+					for (int j = g - stepSize; j < g; j += 1)
+						mat_img.at<uchar>(i,j) = 0;
+				break;
+			case 1:
+				for (int i = h - stepSize; i < h; i += 1)
+					for (int j = g - stepSize; j < g; j += 1)
+						mat_img.at<uchar>(i, j) = 40;
+				break;
+			case 2:
+				for (int i = h - stepSize; i < h; i += 1)
+					for (int j = g - stepSize; j < g; j += 1)
+						mat_img.at<uchar>(i, j) = 100;
+				break;
+			case 3:
+				for (int i = h - stepSize; i < h; i += 1)
+					for (int j = g - stepSize; j < g; j += 1)
+						mat_img.at<uchar>(i, j) = 150;
+				break;
+			case 4:
+				for (int i = h - stepSize; i < h; i += 1)
+					for (int j = g - stepSize; j < g; j += 1)
+						mat_img.at<uchar>(i, j) = 255;
+				break;
+			default:
+				break;
+			}
+			z++;
+		}
+	}
+	return (mat_img);
+}
+
 
 vector<double> ChiDeu(Mat img_VisageLBP1, Mat img_VisageLBP2, int splitX, int splitY)
 {
 	img_VisageLBP1.convertTo(img_VisageLBP1, CV_8UC1);
 	img_VisageLBP2.convertTo(img_VisageLBP2, CV_8UC1);
 	vector<double> score(64, 0);
-	vector<int> mapPonderation{ 0, 0, 0, 0, 0, 0, 0, 0, 2, 4, 4, 1, 1, 4, 4, 2, 1, 1, 1, 0, 0, 1, 1, 1, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 1, 2, 2, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 2, 2, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0 };
+	vector<int> mapPonderation
+	{
+					0, 1, 1, 0, 0, 1, 1, 0,
+					2, 4, 4, 1, 1, 4, 4, 2,
+					1, 3, 3, 0, 0, 3, 3, 1,
+					0, 1, 1, 1, 1, 1, 1, 0,
+					0, 0, 1, 2, 2, 1, 0, 0,
+					0, 1, 2, 3, 3, 2, 1, 0,
+					0, 1, 2, 3, 3, 2, 1, 0,
+					0, 0, 0, 1, 1, 0, 0, 0 
+	};
 	int Nbcomp = splitY*splitX;
 
 	int width = img_VisageLBP1.size().width;
@@ -82,12 +160,6 @@ vector<double> ChiDeu(Mat img_VisageLBP1, Mat img_VisageLBP2, int splitX, int sp
 	int stepSize = img_VisageLBP1.rows / 8;
 
 	int z = 0;
-	int histSize = 255;
-	float range[] = { 0, 255 };
-	const float* histRange = { range };
-	bool uniform = true;
-	bool accumulate = false;
-	cv::Mat a1_hist, a2_hist;
 
 	//initialisation du tableau de scores (16 valeurs)
 
@@ -141,11 +213,14 @@ int main(){
 	CvCapture* capture;
 	Mat frame;
 
+	// Show image Ponderation
+	imshow("ImagePonderation", ShowImageOverlay(ShowImagePonderation(Mat(255, 255, CV_8UC1))));
+
 	try
 	{
-		
+
 		//Julien
-		imageJu = imread("JZK\\crop_1.jpg", CV_LOAD_IMAGE_GRAYSCALE);
+		imageJu = imread("JZK\\crop_3.jpg", CV_LOAD_IMAGE_GRAYSCALE);
 		cv::resize(imageJu, imageJu, Size(256, 256));
 		imageRefJu = new Image(imageJu, 0, 0, 0, 0, 0, 0);
 		imageRefJu->set_frameNdg(imageRefJu->get_frameCouleur());
@@ -190,6 +265,20 @@ int main(){
 		imageRefFlorian = new Image(imageFlorian, 0, 0, 0, 0, 0, 0);
 		imageRefFlorian->set_frameNdg(imageRefFlorian->get_frameCouleur());
 		imageRefFlorian->set_frameLbp(imageRefFlorian->ConvertToLbp(imageRefFlorian->get_frameNdg()));
+
+		//Martin
+		imageMartin = imread("MSR\\crop_1.jpg", CV_LOAD_IMAGE_GRAYSCALE);
+		cv::resize(imageMartin, imageMartin, Size(256, 256));
+		imageRefMartin = new Image(imageMartin, 0, 0, 0, 0, 0, 0);
+		imageRefMartin->set_frameNdg(imageRefMartin->get_frameCouleur());
+		imageRefMartin->set_frameLbp(imageRefMartin->ConvertToLbp(imageRefMartin->get_frameNdg()));
+
+		//Gregoire
+		imageGregoire = imread("GCD\\crop_1.jpg", CV_LOAD_IMAGE_GRAYSCALE);
+		cv::resize(imageGregoire, imageGregoire, Size(256, 256));
+		imageRefGregoire = new Image(imageGregoire, 0, 0, 0, 0, 0, 0);
+		imageRefGregoire->set_frameNdg(imageRefGregoire->get_frameCouleur());
+		imageRefGregoire->set_frameLbp(imageRefGregoire->ConvertToLbp(imageRefGregoire->get_frameNdg()));
 	}
 	catch (Exception e)
 	{
@@ -335,7 +424,8 @@ void detectAndDisplay(){
 			vector<double>scoresCharlot = vector<double>(64);
 			vector<double>scoresSylvain = vector<double>(64);
 			vector<double>scoresFlorian = vector<double>(64);
-
+			vector<double>scoresMartin = vector<double>(64);
+			vector<double>scoresGregoire = vector<double>(64);
 
 			// Calcul des scores pour chaques image de référence
 
@@ -386,8 +476,23 @@ void detectAndDisplay(){
 			{
 				scoreTotalFlorian += score;
 			}
+			// Martin
+			scoresMartin = ChiDeu(imagePourTraitement->get_frameLbp(), imageRefMartin->get_frameLbp(), 8, 8);
+			double scoreTotalMartin = 0;
+			for each (double score  in scoresMartin)
+			{
+				scoreTotalMartin += score;
+			}
+			// Gregoire
+			scoresGregoire = ChiDeu(imagePourTraitement->get_frameLbp(), imageRefGregoire->get_frameLbp(), 8, 8);
+			double scoreTotalGregoire = 0;
+			for each (double score  in scoresGregoire)
+			{
+				scoreTotalGregoire += score;
+			}
 
-			if (scoreTotalJulien < scoreTotalCharlot && scoreTotalJulien < scoreTotalFlorian && scoreTotalJulien < scoreTotalLio && scoreTotalJulien < scoreTotalSylvain && scoreTotalJulien < scoreTotalLucas)
+
+			if (scoreTotalJulien < scoreTotalCharlot && scoreTotalJulien < scoreTotalFlorian && scoreTotalJulien < scoreTotalLio && scoreTotalJulien < scoreTotalSylvain && scoreTotalJulien < scoreTotalLucas && scoreTotalJulien < scoreTotalMartin && scoreTotalJulien < scoreTotalGregoire)
 			{
 				detectedPerson_Name = "ZARNIAK";
 				detectedPerson_Surname = "Julien";
@@ -396,7 +501,7 @@ void detectAndDisplay(){
 				detectedPerson_Company = "ACTEMIUM";
 			}
 
-			if (scoreTotalLio < scoreTotalCharlot && scoreTotalLio < scoreTotalFlorian && scoreTotalLio < scoreTotalJulien && scoreTotalLio < scoreTotalSylvain && scoreTotalLio < scoreTotalLucas)
+			if (scoreTotalLio < scoreTotalCharlot && scoreTotalLio < scoreTotalFlorian && scoreTotalLio < scoreTotalJulien && scoreTotalLio < scoreTotalSylvain && scoreTotalLio < scoreTotalLucas && scoreTotalLio  < scoreTotalMartin && scoreTotalLio  < scoreTotalGregoire)
 			{
 				detectedPerson_Name = "VEROT";
 				detectedPerson_Surname = "Lionel";
@@ -405,17 +510,17 @@ void detectAndDisplay(){
 				detectedPerson_Company = "VALEO";
 			}
 
-			if (scoreTotalLucas < scoreTotalCharlot && scoreTotalLucas < scoreTotalFlorian && scoreTotalLucas < scoreTotalLio && scoreTotalLucas < scoreTotalSylvain && scoreTotalLucas < scoreTotalJulien)
+			if (scoreTotalLucas < scoreTotalCharlot && scoreTotalLucas < scoreTotalFlorian && scoreTotalLucas < scoreTotalLio && scoreTotalLucas < scoreTotalSylvain && scoreTotalLucas < scoreTotalJulien && scoreTotalLucas  < scoreTotalMartin  && scoreTotalLucas  < scoreTotalGregoire)
 			{
 				detectedPerson_Name = "VOLAINE";
 				detectedPerson_Surname = "Lucas";
-				detectedPerson_Birthhdate = "08 février";
+				detectedPerson_Birthhdate = "08 fevrier";
 				detectedPerson_Age = "26 ans";
 				detectedPerson_Company = "AREVA";
 			}
 
 
-			if (scoreTotalCharlot < scoreTotalJulien && scoreTotalCharlot < scoreTotalFlorian && scoreTotalCharlot < scoreTotalLio && scoreTotalCharlot < scoreTotalSylvain && scoreTotalCharlot < scoreTotalLucas)
+			if (scoreTotalCharlot < scoreTotalJulien && scoreTotalCharlot < scoreTotalFlorian && scoreTotalCharlot < scoreTotalLio && scoreTotalCharlot < scoreTotalSylvain && scoreTotalCharlot < scoreTotalLucas && scoreTotalCharlot  < scoreTotalMartin && scoreTotalCharlot  < scoreTotalGregoire)
 			{
 				detectedPerson_Name = "VLIMANT";
 				detectedPerson_Surname = "Charles Etienne";
@@ -425,7 +530,7 @@ void detectAndDisplay(){
 			}
 
 
-			if (scoreTotalSylvain < scoreTotalCharlot && scoreTotalSylvain < scoreTotalFlorian && scoreTotalSylvain < scoreTotalLio && scoreTotalSylvain < scoreTotalJulien && scoreTotalSylvain < scoreTotalLucas)
+			if (scoreTotalSylvain < scoreTotalCharlot && scoreTotalSylvain < scoreTotalFlorian && scoreTotalSylvain < scoreTotalLio && scoreTotalSylvain < scoreTotalJulien && scoreTotalSylvain < scoreTotalLucas && scoreTotalSylvain < scoreTotalMartin && scoreTotalSylvain < scoreTotalGregoire)
 			{
 				detectedPerson_Name = "MARTIN";
 				detectedPerson_Surname = "Sylvain";
@@ -435,7 +540,7 @@ void detectAndDisplay(){
 			}
 
 
-			if (scoreTotalFlorian < scoreTotalCharlot && scoreTotalFlorian < scoreTotalJulien && scoreTotalFlorian < scoreTotalLio && scoreTotalFlorian < scoreTotalSylvain && scoreTotalFlorian < scoreTotalLucas)
+			if (scoreTotalFlorian < scoreTotalCharlot && scoreTotalFlorian < scoreTotalJulien && scoreTotalFlorian < scoreTotalLio && scoreTotalFlorian < scoreTotalSylvain && scoreTotalFlorian < scoreTotalLucas && scoreTotalFlorian < scoreTotalMartin && scoreTotalFlorian < scoreTotalGregoire)
 
 			{
 				detectedPerson_Name = "GIRE";
@@ -443,6 +548,27 @@ void detectAndDisplay(){
 				detectedPerson_Birthhdate = "24 mars";
 				detectedPerson_Age = "23 ans";
 				detectedPerson_Company = "SCHNEIDER";
+			}
+
+			if (scoreTotalMartin < scoreTotalCharlot && scoreTotalMartin < scoreTotalJulien && scoreTotalMartin < scoreTotalLio && scoreTotalMartin < scoreTotalSylvain && scoreTotalMartin < scoreTotalLucas && scoreTotalMartin < scoreTotalFlorian && scoreTotalMartin < scoreTotalGregoire)
+
+			{
+				detectedPerson_Name = "SAMOUILLER";
+				detectedPerson_Surname = "Martin";
+				detectedPerson_Birthhdate = "16 mai";
+				detectedPerson_Age = "23 ans";
+				detectedPerson_Company = "CYXPLUS";
+			}
+
+
+			if (scoreTotalGregoire < scoreTotalCharlot && scoreTotalGregoire < scoreTotalJulien && scoreTotalGregoire < scoreTotalLio && scoreTotalGregoire < scoreTotalSylvain && scoreTotalGregoire < scoreTotalLucas && scoreTotalGregoire < scoreTotalFlorian && scoreTotalGregoire < scoreTotalMartin)
+
+			{
+				detectedPerson_Name = "CHAMBOND";
+				detectedPerson_Surname = "Gregoire";
+				detectedPerson_Birthhdate = "18 juin";
+				detectedPerson_Age = "26 ans";
+				detectedPerson_Company = "INSENSE";
 			}
 
 			putText(imageCamera->get_frameCouleur(), detectedPerson_Surname, cvPoint((faces[ic].x + faces[ic].width / 4), faces[ic].y - 10), FONT_HERSHEY_COMPLEX_SMALL, 0.8, cvScalar(0, 0, 255), 1, CV_AA);
