@@ -5,13 +5,13 @@
 #endif 
 // Gestion Histogramme
 
-Mat Traitements::HistogrammeCouleur(Mat frame)
+cv::Mat Traitements::HistogrammeCouleur(cv::Mat frame)
 {
 	//Histogramme
 
 	/// Separate the image in 3 places ( B, G and R )
-	vector<Mat> bgr_planes;
-	split(frame, bgr_planes);
+	std::vector<cv::Mat> bgr_planes;
+	cv::split(frame, bgr_planes);
 
 	/// Establish the number of bins
 	int histSize = 256;
@@ -22,40 +22,40 @@ Mat Traitements::HistogrammeCouleur(Mat frame)
 
 	bool uniform = true; bool accumulate = true;
 
-	Mat b_hist, g_hist, r_hist;
+	cv::Mat b_hist, g_hist, r_hist;
 
 	/// Compute the histograms:
-	calcHist(&bgr_planes[0], 1, 0, Mat(), b_hist, 1, &histSize, &histRange, uniform, accumulate);
-	calcHist(&bgr_planes[1], 1, 0, Mat(), g_hist, 1, &histSize, &histRange, uniform, accumulate);
-	calcHist(&bgr_planes[2], 1, 0, Mat(), r_hist, 1, &histSize, &histRange, uniform, accumulate);
+	cv::calcHist(&bgr_planes[0], 1, 0, cv::Mat(), b_hist, 1, &histSize, &histRange, uniform, accumulate);
+	cv::calcHist(&bgr_planes[1], 1, 0, cv::Mat(), g_hist, 1, &histSize, &histRange, uniform, accumulate);
+	cv::calcHist(&bgr_planes[2], 1, 0, cv::Mat(), r_hist, 1, &histSize, &histRange, uniform, accumulate);
 
 	// Draw the histograms for B, G and R
 	int hist_w = 512; int hist_h = 400;
 	int bin_w = cvRound(double(hist_w) / histSize);
 
-	Mat histImage(hist_h, hist_w, CV_8UC3, Scalar(0, 0, 0));
+	cv::Mat histImage(hist_h, hist_w, CV_8UC3, cv::Scalar(0, 0, 0));
 
 	/// Normalize the result to [ 0, histImage.rows ]
-	normalize(b_hist, b_hist, 0, histImage.rows, NORM_MINMAX, -1, Mat());
-	normalize(g_hist, g_hist, 0, histImage.rows, NORM_MINMAX, -1, Mat());
-	normalize(r_hist, r_hist, 0, histImage.rows, NORM_MINMAX, -1, Mat());
+	cv::normalize(b_hist, b_hist, 0, histImage.rows, NORM_MINMAX, -1, cv::Mat());
+	cv::normalize(g_hist, g_hist, 0, histImage.rows, NORM_MINMAX, -1, cv::Mat());
+	cv::normalize(r_hist, r_hist, 0, histImage.rows, NORM_MINMAX, -1, cv::Mat());
 
 	/// Draw for each channel
 	for (int i = 1; i < histSize; i++)
 	{
-		line(histImage, Point(bin_w*(i - 1), hist_h - cvRound(b_hist.at<float>(i - 1))),
-			Point(bin_w*(i), hist_h - cvRound(b_hist.at<float>(i))),
-			Scalar(255, 0, 0), 2, 8, 0);
-		line(histImage, Point(bin_w*(i - 1), hist_h - cvRound(g_hist.at<float>(i - 1))),
-			Point(bin_w*(i), hist_h - cvRound(g_hist.at<float>(i))),
-			Scalar(0, 255, 0), 2, 8, 0);
-		line(histImage, Point(bin_w*(i - 1), hist_h - cvRound(r_hist.at<float>(i - 1))),
-			Point(bin_w*(i), hist_h - cvRound(r_hist.at<float>(i))),
-			Scalar(0, 0, 255), 2, 8, 0);
+		cv::line(histImage, cv::Point(bin_w*(i - 1), hist_h - cvRound(b_hist.at<float>(i - 1))),
+			cv::Point(bin_w*(i), hist_h - cvRound(b_hist.at<float>(i))),
+			cv::Scalar(255, 0, 0), 2, 8, 0);
+		cv::line(histImage, cv::Point(bin_w*(i - 1), hist_h - cvRound(g_hist.at<float>(i - 1))),
+			cv::Point(bin_w*(i), hist_h - cvRound(g_hist.at<float>(i))),
+			cv::Scalar(0, 255, 0), 2, 8, 0);
+		cv::line(histImage, cv::Point(bin_w*(i - 1), hist_h - cvRound(r_hist.at<float>(i - 1))),
+			cv::Point(bin_w*(i), hist_h - cvRound(r_hist.at<float>(i))),
+			cv::Scalar(0, 0, 255), 2, 8, 0);
 	}
 	return(histImage);
 }
-Mat Traitements::HistogrammeNDG(Mat frame)
+cv::Mat Traitements::HistogrammeNDG(cv::Mat frame)
 {
 	//Histogramme
 	/// Taile de l'histogramme
@@ -67,34 +67,34 @@ Mat Traitements::HistogrammeNDG(Mat frame)
 
 	bool uniform = true; bool accumulate = true;
 
-	Mat ndg_hist;
+	cv::Mat ndg_hist;
 
 	/// Compute the histograms:
-	calcHist(&frame, 1, 0, Mat(), ndg_hist, 1, &histSize, &histRange, uniform, accumulate);
+	cv::calcHist(&frame, 1, 0, cv::Mat(), ndg_hist, 1, &histSize, &histRange, uniform, accumulate);
 
 	// Draw the histogram
 	int hist_w = 512; int hist_h = 400;
 	int bin_w = cvRound((double)hist_w / histSize);
 
-	Mat histImage(hist_h, hist_w, CV_8UC3, Scalar(0, 0, 0));
+	cv::Mat histImage(hist_h, hist_w, CV_8UC3, cv::Scalar(0, 0, 0));
 
 	/// Normalize the result to [ 0, histImage.rows ]
-	normalize(ndg_hist, ndg_hist, 0, histImage.rows, NORM_MINMAX, -1, Mat());
+	cv::normalize(ndg_hist, ndg_hist, 0, histImage.rows, NORM_MINMAX, -1, cv::Mat());
 
 
 	/// Draw for each channel
 	for (int i = 1; i < histSize; i++)
 	{
-		line(histImage, Point(bin_w*(i - 1), hist_h - cvRound(ndg_hist.at<float>(i - 1))),
-			Point(bin_w*(i), hist_h - cvRound(ndg_hist.at<float>(i))),
-			Scalar(255, 255, 255), 2, 8, 0);
+		cv::line(histImage, cv::Point(bin_w*(i - 1), hist_h - cvRound(ndg_hist.at<float>(i - 1))),
+			cv::Point(bin_w*(i), hist_h - cvRound(ndg_hist.at<float>(i))),
+			cv::Scalar(255, 255, 255), 2, 8, 0);
 	}
-	//Mat mat =
+	//cv::Mat mat =
 	/// Return
 	return histImage;
 }
-Mat Traitements::LBP(Mat img){
-	Mat dst = Mat::zeros(img.rows - 2, img.cols - 2, CV_8UC1);
+cv::Mat Traitements::LBP(cv::Mat img){
+	cv::Mat dst = cv::Mat::zeros(img.rows - 2, img.cols - 2, CV_8UC1);
 	for (int i = 1; i < img.rows - 1; i++) {
 		for (int j = 1; j < img.cols - 1; j++) {
 			uchar center = img.at<uchar>(i, j);
@@ -112,13 +112,13 @@ Mat Traitements::LBP(Mat img){
 	}
 	return dst;
 }
-Mat Traitements::ELBP(const Mat& src, int radius, int neighbors) {
-	neighbors = max(min(neighbors, 31), 1); // set bounds...
+cv::Mat Traitements::ELBP(const cv::Mat& src, int radius, int neighbors) {
+	neighbors = std::max(std::min(neighbors, 31), 1); // set bounds...
 	// Note: alternatively you can switch to the new OpenCV Mat_
 	// type system to define an unsigned int matrix... I am probably
 	// mistaken here, but I didn't see an unsigned int representation
 	// in OpenCV's classic typesystem...
-	 Mat dst = Mat::zeros(src.rows - 2 * radius, src.cols - 2 * radius, CV_32SC1);
+	 cv::Mat dst = cv::Mat::zeros(src.rows - 2 * radius, src.cols - 2 * radius, CV_32SC1);
 	for (int n = 0; n<neighbors; n++) {
 		// sample points
 		float x = static_cast<float>(radius)* cos(2.0*M_PI*n / static_cast<float>(neighbors));
@@ -141,7 +141,7 @@ Mat Traitements::ELBP(const Mat& src, int radius, int neighbors) {
 			for (int j = radius; j < src.cols - radius; j++) {
 				float t = w1*src.at<uchar>(i + fy, j + fx) + w2*src.at<uchar>(i + fy, j + cx) + w3*src.at<uchar>(i + cy, j + fx) + w4*src.at<uchar>(i + cy, j + cx);
 				// we are dealing with floating point precision, so add some little tolerance
-				dst.at<unsigned int>(i - radius, j - radius) += ((t > src.at<uchar>(i, j)) && (abs(t - src.at<uchar>(i, j)) > std::numeric_limits<float>::epsilon())) << n;
+				dst.at<unsigned int>(i - radius, j - radius) += ((t > src.at<uchar>(i, j)) && (cv::abs(t - src.at<uchar>(i, j)) > std::numeric_limits<float>::epsilon())) << n;
 			}
 		}
 	}
@@ -149,7 +149,7 @@ Mat Traitements::ELBP(const Mat& src, int radius, int neighbors) {
 }
 
 
-vector<int> Traitements::CreateHistograme(Mat image, bool isCumulated)
+std::vector<int> Traitements::CreateHistograme(cv::Mat image, bool isCumulated)
 {
 	std::vector<int> vector1(256, 0);
 	int with = image.size().width;
@@ -176,57 +176,58 @@ vector<int> Traitements::CreateHistograme(Mat image, bool isCumulated)
 }
 
 
-Mat Traitements::PreprocessingWithTanTrigs(InputArray src, float alpha, float tau, float gamma, int sigma0, int sigma1) 
+cv::Mat Traitements::PreprocessingWithTanTrigs(cv::InputArray src, float alpha, float tau, float gamma, int sigma0, int sigma1) 
 {
 
 	// Convert to floating point:
-	Mat X = src.getMat();
+	cv::Mat X = src.getMat();
 	X.convertTo(X, CV_32FC1);
 	// Start preprocessing:
-	Mat I;
-	pow(X, gamma, I);
+	cv::Mat I;
+	cv::pow(X, gamma, I);
 	// Calculate the DOG Image:
 	{
-		Mat gaussian0, gaussian1;
-		// Kernel Size:
+		cv::Mat gaussian0, gaussian1;
+		// Kernel cv::Size:
 		int kernel_sz0 = (3 * sigma0);
 		int kernel_sz1 = (3 * sigma1);
 		// Make them odd for OpenCV:
 		kernel_sz0 += ((kernel_sz0 % 2) == 0) ? 1 : 0;
 		kernel_sz1 += ((kernel_sz1 % 2) == 0) ? 1 : 0;
-		GaussianBlur(I, gaussian0, Size(kernel_sz0, kernel_sz0), sigma0, sigma0, BORDER_REPLICATE);
-		GaussianBlur(I, gaussian1, Size(kernel_sz1, kernel_sz1), sigma1, sigma1, BORDER_REPLICATE);
-		subtract(gaussian0, gaussian1, I);
+		cv::GaussianBlur(I, gaussian0, cv::Size(kernel_sz0, kernel_sz0), sigma0, sigma0, BORDER_REPLICATE);
+		cv::GaussianBlur(I, gaussian1, cv::Size(kernel_sz1, kernel_sz1), sigma1, sigma1, BORDER_REPLICATE);
+		cv::subtract(gaussian0, gaussian1, I);
 	}
 
 	{
 		double meanI = 0.0;
 		{
-			Mat tmp;
-			pow(abs(I), alpha, tmp);
-			meanI = mean(tmp).val[0];
+			cv::Mat tmp;
+			cv::pow(cv::abs(I), alpha, tmp);
+			meanI = cv::mean(tmp).val[0];
 
 		}
-		I = I / pow(meanI, 1.0 / alpha);
+		I = I / cv::pow(meanI, 1.0 / alpha);
 	}
 
 	{
 		double meanI = 0.0;
 		{
-			Mat tmp;
-			pow(min(abs(I), tau), alpha, tmp);
-			meanI = mean(tmp).val[0];
+			cv::Mat tmp;
+			cv::pow(cv::min(cv::abs(I), tau), alpha, tmp);
+			meanI = cv::mean(tmp).val[0];
 		}
-		I = I / pow(meanI, 1.0 / alpha);
+		I = I / cv::pow(meanI, 1.0 / alpha);
 	}
 
 	// Squash into the tanh:
 	{
-		Mat exp_x, exp_negx;
-		exp(I / tau, exp_x);
-		exp(-I / tau, exp_negx);
-		divide(exp_x - exp_negx, exp_x + exp_negx, I);
+		cv::Mat exp_x, exp_negx;
+		cv::exp(I / tau, exp_x);
+		cv::exp(-I / tau, exp_negx);
+		cv::divide(exp_x - exp_negx, exp_x + exp_negx, I);
 		I = tau * I;
 	}
 	return I;
 }
+

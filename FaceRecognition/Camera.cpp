@@ -4,9 +4,10 @@
 
 Camera::Camera()
 {
-	//On se connecte par défaut à la caméra
+void Camera::SetCapture(CvCapture* capture){_capture = capture;}
+
 	_capture = cvCaptureFromCAM(1);
-	if (!_capture)	// Si NoK alors on se connecte à la webcam
+	if (!_capture)	// Si NoK alors on se connecte Å• la webcam
 	{
 		_capture = cvCaptureFromCAM(0);
 	}

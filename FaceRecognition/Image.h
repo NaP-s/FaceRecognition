@@ -2,47 +2,45 @@
 #include <opencv2/opencv.hpp>
 #include <iostream>
 #include "Histogram.h"
-using namespace cv;
-using namespace std;
 
 
 class Image
 {
-	Mat m;
+	cv::Mat m;
 public:
 	Image();
 	Image(Image&);
-	Image(Mat frame, bool convertToNdg, bool convertToNdgAndEqualizeHistogram, bool convertToLbp, bool createHistogramColor, bool createHistogramNdg, bool createHistogramLbp);
-	Image(Mat);
+	Image(cv::Mat frame, bool convertToNdg, bool convertToNdgAndEqualizeHistogram, bool convertToLbp, bool createHistogramColor, bool createHistogramNdg, bool createHistogramLbp);
+	Image(cv::Mat);
 	~Image();
 
-	static Mat ConvertToNdg(Mat frameColor, bool equalizeHistogram);
-	static Mat ConvertToNdgFromNotColorImage(Mat frame, bool equalizeHistogram);
-	Mat ConvertToLbp(Mat frameNdg);
-	Mat CreateLbpImage(Mat frame) const;
+	static cv::Mat ConvertToNdg(cv::Mat frameColor, bool equalizeHistogram);
+	static cv::Mat ConvertToNdgFromNotColorImage(cv::Mat frame, bool equalizeHistogram);
+	cv::Mat ConvertToLbp(cv::Mat frameNdg);
+	cv::Mat CreateLbpImage(cv::Mat frame) const;
 	template <class _Tp>
-	Mat CreateLbpImageExtended(const Mat& src, int radius, int neighbors);
-	Mat Normalize(const Mat src) const;
+	cv::Mat CreateLbpImageExtended(const cv::Mat& src, int radius, int neighbors);
+	cv::Mat Normalize(const cv::Mat src) const;
 	
 
-	static Mat resize(Mat frame, Size size);
-	Mat get_frameCouleur() 
+	static cv::Mat resize(cv::Mat frame, cv::Size size);
+	cv::Mat get_frameCouleur() 
 	{
 		return (_frameCouleur.empty() ? m : _frameCouleur);
 	}
-	Mat get_frameNdg() 
+	cv::Mat get_frameNdg() 
 	{
 		return (_frameNdg.empty() ? m : _frameNdg);
 	}
-	void set_frameNdg(Mat frameNdg)
+	void set_frameNdg(cv::Mat frameNdg)
 	{
 		this->_frameNdg = frameNdg;
 	}
-	Mat get_frameLbp() 
+	cv::Mat get_frameLbp() 
 	{
 		return (_frameLbp.empty() ? m : _frameLbp);
 	}
-	void set_frameLbp(Mat frameLbp)
+	void set_frameLbp(cv::Mat frameLbp)
 	{
 		this->_frameLbp = frameLbp;
 	}
@@ -72,9 +70,9 @@ public:
 	}
 
 private:
-	Mat _frameCouleur;
-	Mat _frameNdg;
-	Mat _frameLbp;
+	cv::Mat _frameCouleur;
+	cv::Mat _frameNdg;
+	cv::Mat _frameLbp;
 
 	Histogram _histogramNdg;
 	Histogram _histogramColor;
