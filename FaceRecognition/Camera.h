@@ -11,10 +11,10 @@ public:
 	Camera();
 	~Camera();
 
-	CvCapture* GetCapture();
-	void SetCapture(CvCapture*);
+	VideoCapture GetCapture();
+	void SetCapture(VideoCapture);
 private:
-	CvCapture* _capture;
+	VideoCapture _capture;
 
 };
 

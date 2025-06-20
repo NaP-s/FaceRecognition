@@ -17,7 +17,7 @@
 
 
 
-// Déclaration des namespace
+// DÃ©claration des namespace
 using namespace std;
 using namespace cv;
 
@@ -169,8 +169,8 @@ vector<double> ChiDeu(Mat img_VisageLBP1, Mat img_VisageLBP2, int splitX, int sp
 		for (int g = 0; g + stepSize < width; g += stepSize)
 
 		{
-			// 1) on crée un rectangle qui va sélectionner la partie à découper
-			// on le crée avec un point (x,y), une longueur, une largeur
+			// 1) on crÃ©e un rectangle qui va sÃ©lectionner la partie Ã  dÃ©couper
+			// on le crÃ©e avec un point (x,y), une longueur, une largeur
 
 			CvRect ROI = cvRect(h, g, stepSize, stepSize);
 			Mat img_dest1 = img_VisageLBP1(ROI);
@@ -185,7 +185,7 @@ vector<double> ChiDeu(Mat img_VisageLBP1, Mat img_VisageLBP2, int splitX, int sp
 				if ((hist1[nbBin] + hist2[nbBin]) == 0)
 					score[z] += 0;
 				else
-					score[z] += (((hist1[nbBin] - hist2[nbBin])*(hist1[nbBin] - hist2[nbBin])) / (hist1[nbBin] + hist2[nbBin])); // Calcul du Khi-deux et insertion dans un tableau scores : 16 valeurs à la fin
+	VideoCapture capture;
 			}
 
 			score[z] *= mapPonderation[z];
@@ -205,7 +205,7 @@ vector<double> ChiDeu(Mat img_VisageLBP1, Mat img_VisageLBP2, int splitX, int sp
 
 int main(){
 
-	// Execution de cvStartWindowThread pour pouvoir créer des Threads
+	// Execution de cvStartWindowThread pour pouvoir crÃ©er des Threads
 	cvStartWindowThread();
 
 	// Initializing local variables
@@ -284,19 +284,19 @@ int main(){
 	{
 		printf("--(!)Error loading reference image\n");
 	}
-	// Chargement des cascades de détection => Si on n'y arrive pas alors on ferme l'application
-	if (!face_cascade.load(face_cascade_name)){
-		printf("--(!)Error loading\n");
-		return (-1);
-	}
-	if (!eyes_cascade.load(eyes_cascade_name)){
-		printf("--(!)Error loading\n");
-		return -1;
-	};
+        // On essaye de se connecter en priorite a la camera 1
+        capture.open(1);
+        if(!capture.isOpened())  // Si NoK alors on se connecte a la webcam
+        {
+                capture.open(0);
+        }
+	if (capture.isOpened()){
+			capture >> frame;
+	capture.release();
 
-	// On essaye de se connecter en priorité au lunette
+	// On essaye de se connecter en prioritÃ© au lunette
 	capture = cvCaptureFromCAM(1);
-	if (!capture)	// Si NoK alors on se connecte à la webcam
+	if (!capture)	// Si NoK alors on se connecte Ã  la webcam
 	{
 		capture = cvCaptureFromCAM(0);
 	}
@@ -305,7 +305,7 @@ int main(){
 
 	if (capture != 0){
 		while (k == 1){
-			// On récupère une image depuis la caméra
+			// On rÃ©cupÃ¨re une image depuis la camÃ©ra
 			frame = cvQueryFrame(capture);
 			cv::flip(frame, frame, 1);
 			imageCamera = new Image(frame, 1, 1, 0, 0, 0, 0);
@@ -343,7 +343,7 @@ int main(){
 		}
 	}
 	else{
-		printf("Erreur lors de la lecture du flux vidéo\n");
+		printf("Erreur lors de la lecture du flux vidÃ©o\n");
 	}
 	cvReleaseCapture(&capture);
 	return 0;
@@ -351,46 +351,46 @@ int main(){
 
 #pragma endregion
 
-#pragma region Fonction detectAndDisplay - On lance la détection
-/// <summary>Méthode de détection et d'affichage
-/// <para>frame : Image d'entrée envoyé par la webcam</para>
+#pragma region Fonction detectAndDisplay - On lance la dÃ©tection
+/// <summary>MÃ©thode de dÃ©tection et d'affichage
+/// <para>frame : Image d'entrÃ©e envoyÃ© par la webcam</para>
 /// </summary>
 void detectAndDisplay(){
 	imagePourTraitement = NULL;
-	// Vecteurs de rectangle => Chaque rectangle correspond à l'emplacement d'un visage / yeux
+	// Vecteurs de rectangle => Chaque rectangle correspond Ã  l'emplacement d'un visage / yeux
 	std::vector<Rect> faces;
 	std::vector<Rect> eyes;
 
 
-	// On définit des régions d'interet permettant d'isoler une partie de l'image et ainsi accelerer les temps de traitement
+	// On dÃ©finit des rÃ©gions d'interet permettant d'isoler une partie de l'image et ainsi accelerer les temps de traitement
 	Rect roi_b;
 	Rect roi_c;
 
-	// On convertit l'image de la webcam en Ndg puis on égalise son histogramme si nécessaire
+	// On convertit l'image de la webcam en Ndg puis on Ã©galise son histogramme si nÃ©cessaire
 	if (imageCamera->get_frameNdg().empty())
 		imageCamera->set_frameNdg(imageCamera->ConvertToNdg(imageCamera->get_frameCouleur(), true));
 
 
-	// Détection du visage : CV_HAAR_FIND_BIGGEST_OBJECT On cherche le plus gros objet ; Size(60, 60) => De taille minimum 60*60 pixels
+	// DÃ©tection du visage : CV_HAAR_FIND_BIGGEST_OBJECT On cherche le plus gros objet ; Size(60, 60) => De taille minimum 60*60 pixels
 	face_cascade.detectMultiScale(imageCamera->get_frameNdg(), faces, 1.1, 4, 0 | CV_HAAR_FIND_BIGGEST_OBJECT, Size(60, 60));
 
-	size_t ic = 0; // Index dans le tableau faces : Dans notre cas, on ne détecte qu'un seul visage
+	size_t ic = 0; // Index dans le tableau faces : Dans notre cas, on ne dÃ©tecte qu'un seul visage
 	if (faces.size() != 0){
 		//std::this_thread::sleep_for(std::chrono::milliseconds(500));
-		// On définit une région d'interet autour de notre visage
+		// On dÃ©finit une rÃ©gion d'interet autour de notre visage
 		roi_b.x = faces[ic].x;
 		roi_b.y = faces[ic].y;
 		roi_b.width = faces[ic].width;
 		roi_b.height = faces[ic].height;
 
-		// On créer une nouvelle image avec juste le visage en découpant une partie de l'image de la webCam
+		// On crÃ©er une nouvelle image avec juste le visage en dÃ©coupant une partie de l'image de la webCam
 		imageReduite = new Image(Image::resize(imageCamera->get_frameCouleur()(roi_b), Size(256, 256)), 1, 0, 1, 0, 0, 0);
 
-		// On lance la détection des yeux : CV_HAAR_SCALE_IMAGE On cherche plusieurs objets ; Size(15, 15) => De taille minimum 15*15 pixels
-		// La position des yeux vas nous permettre de pouvoir redecouper notre image en etant resserré sur le visage. On ne voit donc plus le fond.
+		// On lance la dÃ©tection des yeux : CV_HAAR_SCALE_IMAGE On cherche plusieurs objets ; Size(15, 15) => De taille minimum 15*15 pixels
+		// La position des yeux vas nous permettre de pouvoir redecouper notre image en etant resserrÃ© sur le visage. On ne voit donc plus le fond.
 		// C'est cette image qui nous servira pour notre image LBP
 		eyes_cascade.detectMultiScale(imageReduite->get_frameNdg(), eyes, 1.1, 4, 0 | CV_HAAR_SCALE_IMAGE, Size(15, 15));
-		// Dans le cas ou on a bien détecter deux yeux
+		// Dans le cas ou on a bien dÃ©tecter deux yeux
 		if (eyes.size() == 2){
 			// Si le premier oeil du vecteur est l'oeil gauche
 			if (eyes[0].x <= eyes[1].x){
@@ -406,18 +406,18 @@ void detectAndDisplay(){
 				roi_c.height = 190;
 			}
 
-			// On crée notre / nos images LBP
+			// On crÃ©e notre / nos images LBP
 			imagePourTraitement = new Image(Image::resize(imageReduite->get_frameCouleur()(roi_c), Size(256, 256)), 1, 1, 1, 0, 0, 0);
 		}
 
-		// Dessin du visage détecté sur l'image principale
+		// Dessin du visage dÃ©tectÃ© sur l'image principale
 		Point pt1(faces[ic].x, faces[ic].y);
 		Point pt2((faces[ic].x + faces[ic].height), (faces[ic].y + faces[ic].width));
 		// ReSharper disable once CppMsExtBindingRValueToLvalueReference
 		rectangle(imageCamera->get_frameCouleur(), pt1, pt2, Scalar(0, 255, 0), 1, 8, 0);
 		if (imagePourTraitement != NULL && imageRefJu != NULL && imageRefLio != NULL && imageRefCharlot != NULL && imageRefLucas != NULL && imageRefSylvain != NULL && imageRefFlorian != NULL)
 		{
-			// Vecteurs de résultat
+			// Vecteurs de rÃ©sultat
 			vector<double>scoresJulien = vector<double>(64);
 			vector<double>scoresLio = vector<double>(64);
 			vector<double>scoresLucas = vector<double>(64);
@@ -427,7 +427,7 @@ void detectAndDisplay(){
 			vector<double>scoresMartin = vector<double>(64);
 			vector<double>scoresGregoire = vector<double>(64);
 
-			// Calcul des scores pour chaques image de référence
+			// Calcul des scores pour chaques image de rÃ©fÃ©rence
 
 			// Julien
 			scoresJulien = ChiDeu(imagePourTraitement->get_frameLbp(), imageRefJu->get_frameLbp(), 8, 8);
