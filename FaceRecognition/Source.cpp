@@ -3,6 +3,7 @@
 #include "opencv2/objdetect/objdetect.hpp"
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
+#include "opencv2/face.hpp"
 #include <stdio.h> 
 #include <string.h> 
 #include <stdlib.h> 
@@ -17,9 +18,10 @@
 
 
 
-// DÈclaration des namespace
+// D√©claration des namespace
 using namespace std;
 using namespace cv;
+using namespace cv::face;
 
 // Function Headers
 void detectAndDisplay();
@@ -53,6 +55,13 @@ String detectedPerson_Surname;
 String detectedPerson_Age;
 String detectedPerson_Birthhdate;
 String detectedPerson_Company;
+
+Ptr<LBPHFaceRecognizer> recognizer;
+vector<string> labels_name;
+vector<string> labels_surname;
+vector<string> labels_age;
+vector<string> labels_birthdate;
+vector<string> labels_company;
 
 
 Mat ShowImageOverlay(Mat imageToDisplay)
@@ -169,8 +178,8 @@ vector<double> ChiDeu(Mat img_VisageLBP1, Mat img_VisageLBP2, int splitX, int sp
 		for (int g = 0; g + stepSize < width; g += stepSize)
 
 		{
-			// 1) on crÈe un rectangle qui va sÈlectionner la partie ‡ dÈcouper
-			// on le crÈe avec un point (x,y), une longueur, une largeur
+			// 1) on cr√©e un rectangle qui va s√©lectionner la partie √† d√©couper
+			// on le cr√©e avec un point (x,y), une longueur, une largeur
 
 			CvRect ROI = cvRect(h, g, stepSize, stepSize);
 			Mat img_dest1 = img_VisageLBP1(ROI);
@@ -185,7 +194,7 @@ vector<double> ChiDeu(Mat img_VisageLBP1, Mat img_VisageLBP2, int splitX, int sp
 				if ((hist1[nbBin] + hist2[nbBin]) == 0)
 					score[z] += 0;
 				else
-					score[z] += (((hist1[nbBin] - hist2[nbBin])*(hist1[nbBin] - hist2[nbBin])) / (hist1[nbBin] + hist2[nbBin])); // Calcul du Khi-deux et insertion dans un tableau scores : 16 valeurs ‡ la fin
+					score[z] += (((hist1[nbBin] - hist2[nbBin])*(hist1[nbBin] - hist2[nbBin])) / (hist1[nbBin] + hist2[nbBin])); // Calcul du Khi-deux et insertion dans un tableau scores : 16 valeurs √† la fin
 			}
 
 			score[z] *= mapPonderation[z];
@@ -205,7 +214,7 @@ vector<double> ChiDeu(Mat img_VisageLBP1, Mat img_VisageLBP2, int splitX, int sp
 
 int main(){
 
-	// Execution de cvStartWindowThread pour pouvoir crÈer des Threads
+	// Execution de cvStartWindowThread pour pouvoir cr√©er des Threads
 	cvStartWindowThread();
 
 	// Initializing local variables
@@ -276,15 +285,34 @@ int main(){
 		//Gregoire
 		imageGregoire = imread("GCD\\crop_1.jpg", CV_LOAD_IMAGE_GRAYSCALE);
 		cv::resize(imageGregoire, imageGregoire, Size(256, 256));
-		imageRefGregoire = new Image(imageGregoire, 0, 0, 0, 0, 0, 0);
-		imageRefGregoire->set_frameNdg(imageRefGregoire->get_frameCouleur());
-		imageRefGregoire->set_frameLbp(imageRefGregoire->ConvertToLbp(imageRefGregoire->get_frameNdg()));
-	}
-	catch (Exception e)
-	{
-		printf("--(!)Error loading reference image\n");
-	}
-	// Chargement des cascades de dÈtection => Si on n'y arrive pas alors on ferme l'application
+                imageRefGregoire = new Image(imageGregoire, 0, 0, 0, 0, 0, 0);
+                imageRefGregoire->set_frameNdg(imageRefGregoire->get_frameCouleur());
+                imageRefGregoire->set_frameLbp(imageRefGregoire->ConvertToLbp(imageRefGregoire->get_frameNdg()));
+
+                // Entra√Ænement du mod√®le LBPH
+                vector<Mat> trainImages{
+                        imageRefJu->get_frameNdg(),
+                        imageRefLio->get_frameNdg(),
+                        imageRefLucas->get_frameNdg(),
+                        imageRefCharlot->get_frameNdg(),
+                        imageRefSylvain->get_frameNdg(),
+                        imageRefFlorian->get_frameNdg(),
+                        imageRefMartin->get_frameNdg(),
+                        imageRefGregoire->get_frameNdg() };
+                vector<int> trainLabels{0,1,2,3,4,5,6,7};
+                labels_name = {"ZARNIAK","VEROT","VOLAINE","VLIMANT","MARTIN","GIRE","SAMOUILLER","CHAMBOND"};
+                labels_surname = {"Julien","Lionel","Lucas","Charles Etienne","Sylvain","Florian","Martin","Gregoire"};
+                labels_birthdate = {"27 juillet","17 aout","08 fevrier","18 mars","21 novembre","24 mars","16 mai","18 juin"};
+                labels_age = {"23 ans","23 ans","26 ans","25 ans","23 ans","23 ans","23 ans","26 ans"};
+                labels_company = {"ACTEMIUM","VALEO","AREVA","THALES","Tri qualite service","SCHNEIDER","CYXPLUS","INSENSE"};
+                recognizer = LBPHFaceRecognizer::create();
+                recognizer->train(trainImages, trainLabels);
+        }
+        catch (Exception e)
+        {
+                printf("--(!)Error loading reference image\n");
+        }
+	// Chargement des cascades de d√©tection => Si on n'y arrive pas alors on ferme l'application
 	if (!face_cascade.load(face_cascade_name)){
 		printf("--(!)Error loading\n");
 		return (-1);
@@ -294,9 +322,9 @@ int main(){
 		return -1;
 	};
 
-	// On essaye de se connecter en prioritÈ au lunette
+	// On essaye de se connecter en priorit√© au lunette
 	capture = cvCaptureFromCAM(1);
-	if (!capture)	// Si NoK alors on se connecte ‡ la webcam
+	if (!capture)	// Si NoK alors on se connecte √† la webcam
 	{
 		capture = cvCaptureFromCAM(0);
 	}
@@ -305,7 +333,7 @@ int main(){
 
 	if (capture != 0){
 		while (k == 1){
-			// On rÈcupËre une image depuis la camÈra
+			// On r√©cup√®re une image depuis la cam√©ra
 			frame = cvQueryFrame(capture);
 			cv::flip(frame, frame, 1);
 			imageCamera = new Image(frame, 1, 1, 0, 0, 0, 0);
@@ -343,7 +371,7 @@ int main(){
 		}
 	}
 	else{
-		printf("Erreur lors de la lecture du flux vidÈo\n");
+		printf("Erreur lors de la lecture du flux vid√©o\n");
 	}
 	cvReleaseCapture(&capture);
 	return 0;
@@ -351,46 +379,46 @@ int main(){
 
 #pragma endregion
 
-#pragma region Fonction detectAndDisplay - On lance la dÈtection
-/// <summary>MÈthode de dÈtection et d'affichage
-/// <para>frame : Image d'entrÈe envoyÈ par la webcam</para>
+#pragma region Fonction detectAndDisplay - On lance la d√©tection
+/// <summary>M√©thode de d√©tection et d'affichage
+/// <para>frame : Image d'entr√©e envoy√© par la webcam</para>
 /// </summary>
 void detectAndDisplay(){
 	imagePourTraitement = NULL;
-	// Vecteurs de rectangle => Chaque rectangle correspond ‡ l'emplacement d'un visage / yeux
+	// Vecteurs de rectangle => Chaque rectangle correspond √† l'emplacement d'un visage / yeux
 	std::vector<Rect> faces;
 	std::vector<Rect> eyes;
 
 
-	// On dÈfinit des rÈgions d'interet permettant d'isoler une partie de l'image et ainsi accelerer les temps de traitement
+	// On d√©finit des r√©gions d'interet permettant d'isoler une partie de l'image et ainsi accelerer les temps de traitement
 	Rect roi_b;
 	Rect roi_c;
 
-	// On convertit l'image de la webcam en Ndg puis on Ègalise son histogramme si nÈcessaire
+	// On convertit l'image de la webcam en Ndg puis on √©galise son histogramme si n√©cessaire
 	if (imageCamera->get_frameNdg().empty())
 		imageCamera->set_frameNdg(imageCamera->ConvertToNdg(imageCamera->get_frameCouleur(), true));
 
 
-	// DÈtection du visage : CV_HAAR_FIND_BIGGEST_OBJECT On cherche le plus gros objet ; Size(60, 60) => De taille minimum 60*60 pixels
+	// D√©tection du visage : CV_HAAR_FIND_BIGGEST_OBJECT On cherche le plus gros objet ; Size(60, 60) => De taille minimum 60*60 pixels
 	face_cascade.detectMultiScale(imageCamera->get_frameNdg(), faces, 1.1, 4, 0 | CV_HAAR_FIND_BIGGEST_OBJECT, Size(60, 60));
 
-	size_t ic = 0; // Index dans le tableau faces : Dans notre cas, on ne dÈtecte qu'un seul visage
+	size_t ic = 0; // Index dans le tableau faces : Dans notre cas, on ne d√©tecte qu'un seul visage
 	if (faces.size() != 0){
 		//std::this_thread::sleep_for(std::chrono::milliseconds(500));
-		// On dÈfinit une rÈgion d'interet autour de notre visage
+		// On d√©finit une r√©gion d'interet autour de notre visage
 		roi_b.x = faces[ic].x;
 		roi_b.y = faces[ic].y;
 		roi_b.width = faces[ic].width;
 		roi_b.height = faces[ic].height;
 
-		// On crÈer une nouvelle image avec juste le visage en dÈcoupant une partie de l'image de la webCam
+		// On cr√©er une nouvelle image avec juste le visage en d√©coupant une partie de l'image de la webCam
 		imageReduite = new Image(Image::resize(imageCamera->get_frameCouleur()(roi_b), Size(256, 256)), 1, 0, 1, 0, 0, 0);
 
-		// On lance la dÈtection des yeux : CV_HAAR_SCALE_IMAGE On cherche plusieurs objets ; Size(15, 15) => De taille minimum 15*15 pixels
-		// La position des yeux vas nous permettre de pouvoir redecouper notre image en etant resserrÈ sur le visage. On ne voit donc plus le fond.
+		// On lance la d√©tection des yeux : CV_HAAR_SCALE_IMAGE On cherche plusieurs objets ; Size(15, 15) => De taille minimum 15*15 pixels
+		// La position des yeux vas nous permettre de pouvoir redecouper notre image en etant resserr√© sur le visage. On ne voit donc plus le fond.
 		// C'est cette image qui nous servira pour notre image LBP
 		eyes_cascade.detectMultiScale(imageReduite->get_frameNdg(), eyes, 1.1, 4, 0 | CV_HAAR_SCALE_IMAGE, Size(15, 15));
-		// Dans le cas ou on a bien dÈtecter deux yeux
+		// Dans le cas ou on a bien d√©tecter deux yeux
 		if (eyes.size() == 2){
 			// Si le premier oeil du vecteur est l'oeil gauche
 			if (eyes[0].x <= eyes[1].x){
@@ -406,173 +434,32 @@ void detectAndDisplay(){
 				roi_c.height = 190;
 			}
 
-			// On crÈe notre / nos images LBP
+			// On cr√©e notre / nos images LBP
 			imagePourTraitement = new Image(Image::resize(imageReduite->get_frameCouleur()(roi_c), Size(256, 256)), 1, 1, 1, 0, 0, 0);
 		}
 
-		// Dessin du visage dÈtectÈ sur l'image principale
+		// Dessin du visage d√©tect√© sur l'image principale
 		Point pt1(faces[ic].x, faces[ic].y);
 		Point pt2((faces[ic].x + faces[ic].height), (faces[ic].y + faces[ic].width));
 		// ReSharper disable once CppMsExtBindingRValueToLvalueReference
 		rectangle(imageCamera->get_frameCouleur(), pt1, pt2, Scalar(0, 255, 0), 1, 8, 0);
-		if (imagePourTraitement != NULL && imageRefJu != NULL && imageRefLio != NULL && imageRefCharlot != NULL && imageRefLucas != NULL && imageRefSylvain != NULL && imageRefFlorian != NULL)
-		{
-			// Vecteurs de rÈsultat
-			vector<double>scoresJulien = vector<double>(64);
-			vector<double>scoresLio = vector<double>(64);
-			vector<double>scoresLucas = vector<double>(64);
-			vector<double>scoresCharlot = vector<double>(64);
-			vector<double>scoresSylvain = vector<double>(64);
-			vector<double>scoresFlorian = vector<double>(64);
-			vector<double>scoresMartin = vector<double>(64);
-			vector<double>scoresGregoire = vector<double>(64);
-
-			// Calcul des scores pour chaques image de rÈfÈrence
-
-			// Julien
-			scoresJulien = ChiDeu(imagePourTraitement->get_frameLbp(), imageRefJu->get_frameLbp(), 8, 8);
-			double scoreTotalJulien = 0;
-			for each (double score  in scoresJulien)
-			{
-				scoreTotalJulien += score;
-			}
-
-			// Lucas
-			scoresLucas = ChiDeu(imagePourTraitement->get_frameLbp(), imageRefLucas->get_frameLbp(), 8, 8);
-			double scoreTotalLucas = 0;
-			for each (double score  in scoresLucas)
-			{
-				scoreTotalLucas += score;
-			}
-
-			// Lio
-			scoresLio = ChiDeu(imagePourTraitement->get_frameLbp(), imageRefLio->get_frameLbp(), 8, 8);
-			double scoreTotalLio = 0;
-			for each (double score  in scoresLio)
-			{
-				scoreTotalLio += score;
-			}
-
-			// Charlot
-			scoresCharlot = ChiDeu(imagePourTraitement->get_frameLbp(), imageRefCharlot->get_frameLbp(), 8, 8);
-			double scoreTotalCharlot = 0;
-			for each (double score  in scoresCharlot)
-			{
-				scoreTotalCharlot += score;
-			}
-
-			// Sylvain
-			scoresSylvain = ChiDeu(imagePourTraitement->get_frameLbp(), imageRefSylvain->get_frameLbp(), 8, 8);
-			double scoreTotalSylvain = 0;
-			for each (double score  in scoresSylvain)
-			{
-				scoreTotalSylvain += score;
-			}
-
-			// Florian
-			scoresFlorian = ChiDeu(imagePourTraitement->get_frameLbp(), imageRefFlorian->get_frameLbp(), 8, 8);
-			double scoreTotalFlorian = 0;
-			for each (double score  in scoresFlorian)
-			{
-				scoreTotalFlorian += score;
-			}
-			// Martin
-			scoresMartin = ChiDeu(imagePourTraitement->get_frameLbp(), imageRefMartin->get_frameLbp(), 8, 8);
-			double scoreTotalMartin = 0;
-			for each (double score  in scoresMartin)
-			{
-				scoreTotalMartin += score;
-			}
-			// Gregoire
-			scoresGregoire = ChiDeu(imagePourTraitement->get_frameLbp(), imageRefGregoire->get_frameLbp(), 8, 8);
-			double scoreTotalGregoire = 0;
-			for each (double score  in scoresGregoire)
-			{
-				scoreTotalGregoire += score;
-			}
-
-
-			if (scoreTotalJulien < scoreTotalCharlot && scoreTotalJulien < scoreTotalFlorian && scoreTotalJulien < scoreTotalLio && scoreTotalJulien < scoreTotalSylvain && scoreTotalJulien < scoreTotalLucas && scoreTotalJulien < scoreTotalMartin && scoreTotalJulien < scoreTotalGregoire)
-			{
-				detectedPerson_Name = "ZARNIAK";
-				detectedPerson_Surname = "Julien";
-				detectedPerson_Birthhdate = "27 juillet";
-				detectedPerson_Age = "23 ans";
-				detectedPerson_Company = "ACTEMIUM";
-			}
-
-			if (scoreTotalLio < scoreTotalCharlot && scoreTotalLio < scoreTotalFlorian && scoreTotalLio < scoreTotalJulien && scoreTotalLio < scoreTotalSylvain && scoreTotalLio < scoreTotalLucas && scoreTotalLio  < scoreTotalMartin && scoreTotalLio  < scoreTotalGregoire)
-			{
-				detectedPerson_Name = "VEROT";
-				detectedPerson_Surname = "Lionel";
-				detectedPerson_Birthhdate = "17 aout";
-				detectedPerson_Age = "23 ans";
-				detectedPerson_Company = "VALEO";
-			}
-
-			if (scoreTotalLucas < scoreTotalCharlot && scoreTotalLucas < scoreTotalFlorian && scoreTotalLucas < scoreTotalLio && scoreTotalLucas < scoreTotalSylvain && scoreTotalLucas < scoreTotalJulien && scoreTotalLucas  < scoreTotalMartin  && scoreTotalLucas  < scoreTotalGregoire)
-			{
-				detectedPerson_Name = "VOLAINE";
-				detectedPerson_Surname = "Lucas";
-				detectedPerson_Birthhdate = "08 fevrier";
-				detectedPerson_Age = "26 ans";
-				detectedPerson_Company = "AREVA";
-			}
-
-
-			if (scoreTotalCharlot < scoreTotalJulien && scoreTotalCharlot < scoreTotalFlorian && scoreTotalCharlot < scoreTotalLio && scoreTotalCharlot < scoreTotalSylvain && scoreTotalCharlot < scoreTotalLucas && scoreTotalCharlot  < scoreTotalMartin && scoreTotalCharlot  < scoreTotalGregoire)
-			{
-				detectedPerson_Name = "VLIMANT";
-				detectedPerson_Surname = "Charles Etienne";
-				detectedPerson_Birthhdate = "18 mars";
-				detectedPerson_Age = "25 ans";
-				detectedPerson_Company = "THALES";
-			}
-
-
-			if (scoreTotalSylvain < scoreTotalCharlot && scoreTotalSylvain < scoreTotalFlorian && scoreTotalSylvain < scoreTotalLio && scoreTotalSylvain < scoreTotalJulien && scoreTotalSylvain < scoreTotalLucas && scoreTotalSylvain < scoreTotalMartin && scoreTotalSylvain < scoreTotalGregoire)
-			{
-				detectedPerson_Name = "MARTIN";
-				detectedPerson_Surname = "Sylvain";
-				detectedPerson_Birthhdate = "21 novembre";
-				detectedPerson_Age = "23 ans";
-				detectedPerson_Company = "Tri qualite service";
-			}
-
-
-			if (scoreTotalFlorian < scoreTotalCharlot && scoreTotalFlorian < scoreTotalJulien && scoreTotalFlorian < scoreTotalLio && scoreTotalFlorian < scoreTotalSylvain && scoreTotalFlorian < scoreTotalLucas && scoreTotalFlorian < scoreTotalMartin && scoreTotalFlorian < scoreTotalGregoire)
-
-			{
-				detectedPerson_Name = "GIRE";
-				detectedPerson_Surname = "Florian";
-				detectedPerson_Birthhdate = "24 mars";
-				detectedPerson_Age = "23 ans";
-				detectedPerson_Company = "SCHNEIDER";
-			}
-
-			if (scoreTotalMartin < scoreTotalCharlot && scoreTotalMartin < scoreTotalJulien && scoreTotalMartin < scoreTotalLio && scoreTotalMartin < scoreTotalSylvain && scoreTotalMartin < scoreTotalLucas && scoreTotalMartin < scoreTotalFlorian && scoreTotalMartin < scoreTotalGregoire)
-
-			{
-				detectedPerson_Name = "SAMOUILLER";
-				detectedPerson_Surname = "Martin";
-				detectedPerson_Birthhdate = "16 mai";
-				detectedPerson_Age = "23 ans";
-				detectedPerson_Company = "CYXPLUS";
-			}
-
-
-			if (scoreTotalGregoire < scoreTotalCharlot && scoreTotalGregoire < scoreTotalJulien && scoreTotalGregoire < scoreTotalLio && scoreTotalGregoire < scoreTotalSylvain && scoreTotalGregoire < scoreTotalLucas && scoreTotalGregoire < scoreTotalFlorian && scoreTotalGregoire < scoreTotalMartin)
-
-			{
-				detectedPerson_Name = "CHAMBOND";
-				detectedPerson_Surname = "Gregoire";
-				detectedPerson_Birthhdate = "18 juin";
-				detectedPerson_Age = "26 ans";
-				detectedPerson_Company = "INSENSE";
-			}
-
-			putText(imageCamera->get_frameCouleur(), detectedPerson_Surname, cvPoint((faces[ic].x + faces[ic].width / 4), faces[ic].y - 10), FONT_HERSHEY_COMPLEX_SMALL, 0.8, cvScalar(0, 0, 255), 1, CV_AA);
-		}
+                if (imagePourTraitement != NULL && recognizer != NULL)
+                {
+                        int label = -1;
+                        double confidence = 0.0;
+                        recognizer->predict(imagePourTraitement->get_frameNdg(), label, confidence);
+                        if (label >= 0 && label < labels_name.size())
+                        {
+                                detectedPerson_Name = labels_name[label];
+                                detectedPerson_Surname = labels_surname[label];
+                                detectedPerson_Birthhdate = labels_birthdate[label];
+                                detectedPerson_Age = labels_age[label];
+                                detectedPerson_Company = labels_company[label];
+                        }
+                        putText(imageCamera->get_frameCouleur(), detectedPerson_Surname,
+                               cvPoint((faces[ic].x + faces[ic].width / 4), faces[ic].y - 10),
+                               FONT_HERSHEY_COMPLEX_SMALL, 0.8, cvScalar(0, 0, 255), 1, CV_AA);
+                }
 	}
 	// Affichage des differentes images
 	imshow("WebCam", imageCamera->get_frameCouleur());
