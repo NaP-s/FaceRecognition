@@ -1,25 +1,23 @@
 #pragma once
 #include <opencv2/opencv.hpp>
 #include <iostream>
-using namespace cv;
-using namespace std;
 
 class Histogram
 {
 public:
 	Histogram();
-	Histogram(Mat frame);
+	Histogram(cv::Mat frame);
 	~Histogram();
 
-	void CreateHistogrammeCouleur(Mat frame);
-	void CreateHistogrammeNDG(Mat frame);
+	void CreateHistogrammeCouleur(cv::Mat frame);
+	void CreateHistogrammeNDG(cv::Mat frame);
 
-	Mat get_graphHistogram() const
+	cv::Mat get_graphHistogram() const
 	{
 		return (_graphHistogram);
 	}
 private:
-	Mat _graphHistogram;
+	cv::Mat _graphHistogram;
 	int* _matriceHistogram;
 
 };

@@ -16,7 +16,7 @@ Image::Image(Image& image)
 	this->_histogramLbp = image._histogramLbp;
 }
 
-Image::Image(Mat frame, bool convertToNdg = 0, bool convertToNdgAndEqualizeHistogram = 0, bool convertToLbp = 0, bool createHistogramColor = 0, bool createHistogramNdg = 0, bool createHistogramLbp = 0)
+Image::Image(cv::Mat frame, bool convertToNdg = 0, bool convertToNdgAndEqualizeHistogram = 0, bool convertToLbp = 0, bool createHistogramColor = 0, bool createHistogramNdg = 0, bool createHistogramLbp = 0)
 {
 	this->_frameCouleur = frame;
 	if (convertToNdg)
@@ -30,7 +30,7 @@ Image::Image(Mat frame, bool convertToNdg = 0, bool convertToNdgAndEqualizeHisto
 	if (createHistogramColor)
 		this->_histogramColor = *(new Histogram(this->_frameCouleur));
 }
-Image::Image(Mat frameLbp)
+Image::Image(cv::Mat frameLbp)
 {
 	this->_frameLbp = frameLbp;
 }
@@ -39,29 +39,29 @@ Image::~Image()
 {
 }
 
-Mat Image::ConvertToNdg(Mat frameColor, bool equalizeHistogram)
+cv::Mat Image::ConvertToNdg(cv::Mat frameColor, bool equalizeHistogram)
 {
-	Mat frameNdg;
-	cvtColor(frameColor, frameNdg, COLOR_BGR2GRAY);
+	cv::Mat frameNdg;
+	cv::cvtColor(frameColor, frameNdg, COLOR_BGR2GRAY);
 	if (equalizeHistogram)
 	{
-		GaussianBlur(frameNdg, frameNdg, Size(1, 1), 0, 0);
+		cv::GaussianBlur(frameNdg, frameNdg, cv::Size(1, 1), 0, 0);
 		//equalizeHist(frameNdg, frameNdg);
 		//normalize(frameNdg, frameNdg, 0, 255, NORM_MINMAX, CV_8UC1);
 	}
 	return (frameNdg);
 }
 
-Mat Image::ConvertToNdgFromNotColorImage(Mat frame, bool equalizeHistogram)
+cv::Mat Image::ConvertToNdgFromNotColorImage(cv::Mat frame, bool equalizeHistogram)
 {
-	Mat frameNdg;
+	cv::Mat frameNdg;
 	frame.convertTo(frameNdg, CV_8UC1);
 	return (frameNdg);
 }
 
-Mat Image::ConvertToLbp(Mat frameNdg)
+cv::Mat Image::ConvertToLbp(cv::Mat frameNdg)
 {
-	Mat frameLbp;
+	cv::Mat frameLbp;
 	//frameLbp =  Traitements::ELBP(frameNdg,1,4);
 	frameLbp = Traitements::LBP(frameNdg);
 
@@ -70,10 +70,10 @@ Mat Image::ConvertToLbp(Mat frameNdg)
 
 
 
-Mat Image::Normalize(Mat src) const
+cv::Mat Image::Normalize(cv::Mat src) const
 {
-	// Create and return normalized image:
-	Mat dst;
+        // Crée et renvoie une image normalisée :
+	cv::Mat dst;
 	switch (src.channels()) {
 	case 1:
 		cv::normalize(src, dst, 0, 255, NORM_MINMAX, CV_8UC1);
@@ -89,9 +89,10 @@ Mat Image::Normalize(Mat src) const
 }
 
 
-Mat Image::resize(Mat frame, Size size)
+cv::Mat Image::resize(cv::Mat frame, cv::Size size)
 {
-	Mat rezized;
+	cv::Mat rezized;
 	cv::resize(frame, rezized, size, 0, 0, INTER_LINEAR);
 	return(rezized);
 }
+
